@@ -6,7 +6,7 @@ export default function Politician() {
   const [responses, setResponses] = useState({})
   const [reports, setReports] = useState(() => getReports())
   const [leaderImgJagan, setLeaderImgJagan] = useState(() => getLeaderImage('jagan'))
-  const [leaderImgModi, setLeaderImgModi] = useState(() => getLeaderImage('modi'))
+  const [leaderImgRohit, setLeaderImgRohit] = useState(() => getLeaderImage('rohit'))
   
   function submitUpdate(e) {
     e.preventDefault()
@@ -45,10 +45,10 @@ export default function Politician() {
             <input type="file" accept="image/*" onChange={handleImageUpload('jagan', setLeaderImgJagan)} />
           </div>
           <div className="role-card leader-card">
-            <img className="leader-img" src={leaderImgModi || 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Prime_Minister_Narendra_Modi_in_New_Delhi_2023.jpg'} alt="Leader" />
-            <strong>Narendra Modi</strong>
+            <img className="leader-img" src={leaderImgRohit || 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Rohit_Sharma_portrait.jpg'} alt="Leader" />
+            <strong>Rohit Sharma</strong>
             <span className="badge politician">Public Leader</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload('modi', setLeaderImgModi)} />
+            <input type="file" accept="image/*" onChange={handleImageUpload('rohit', setLeaderImgRohit)} />
           </div>
         </div>
       </div>

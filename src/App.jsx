@@ -11,15 +11,21 @@ import { getCurrentRole, logout } from './store.js'
 
 function App() {
   const [role, setRole] = useState(() => getCurrentRole())
+
   useEffect(() => {
-    function sync() { setRole(getCurrentRole()) }
+    function sync() {
+      setRole(getCurrentRole())
+    }
+
     window.addEventListener('storage', sync)
     window.addEventListener('fedf_role_change', sync)
+
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('fedf_role_change', sync)
     }
   }, [])
+
   return (
     <div>
       <header className="site-header">
@@ -57,4 +63,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { setCurrentRole, setCurrentUser } from '../store.js'
 
 export default function Login() {
-  const [role, setRole] = useState('Citizen')
+  const [role, setRole] = useState('Admin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
@@ -32,9 +32,9 @@ export default function Login() {
           Role
           <select value={role} onChange={e=>setRole(e.target.value)}>
             <option>Admin</option>
+            <option>Citizen</option>
             <option>Moderator</option>
             <option>Politician</option>
-            <option>Citizen</option>
           </select>
         </label>
         <button type="submit">Continue</button>

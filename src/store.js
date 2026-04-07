@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'fedf_ps08_data'
+const BASE_URL = "https://backendproject-6-0sai.onrender.com"
 
 function load() {
   const raw = localStorage.getItem(STORAGE_KEY)
@@ -120,7 +121,6 @@ export function addResponse(response) {
   const data = load()
   const id = Date.now()
   data.responses.push({ id, createdAt: new Date().toISOString(), ...response })
-  // also mark report as addressed if provided
   if (response.reportId) {
     const r = data.reports.find(x => x.id === response.reportId)
     if (r) r.status = 'responded'
@@ -156,3 +156,57 @@ export function getUpdates() { return load().updates }
 export function getResponses() { return load().responses }
 export function getFlags() { return load().flags }
 export function getUsers() { return load().users }
+
+// ================= BACKEND API FUNCTIONS =================
+
+export async function fetchPostsFromBackend() {
+  const response = await fetch(`${BASE_URL}/api/posts`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch posts')
+  }
+  return await response.json()
+}
+
+export async function createPostInBackend(post) {
+  const response = await fetch(`${BASE_URL}/api/posts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(post)
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to create post')
+  }
+
+  return await response.json()
+}
+
+export async function updatePostInBackend(id, post) {
+  const response = await fetch(`${BASE_URL}/api/posts/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(post)
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to update post')
+  }
+
+  return await response.json()
+}
+
+export async function deletePostInBackend(id) {
+  const response = await fetch(`${BASE_URL}/api/posts/${id}`, {
+    method: 'DELETE'
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to delete post')
+  }
+
+  return await response.text()
+}
