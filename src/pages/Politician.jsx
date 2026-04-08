@@ -1,99 +1,221 @@
-import { useState } from 'react'
-import { addUpdate, addResponse, getReports, solveReport, setLeaderImage, getLeaderImage } from '../store.js'
+import { useEffect, useState } from 'react'
+import {
+  addUpdate,
+  addResponse,
+  getUpdates,
+  getResponses
+} from '../store.js'
 
-export default function Politician() {
-  const [update, setUpdate] = useState({ title: '', content: '', politicianName: '' })
-  const [responses, setResponses] = useState({})
-  const [reports, setReports] = useState(() => getReports())
-  const [leaderImgJagan, setLeaderImgJagan] = useState(() => getLeaderImage('jagan'))
-  const [leaderImgRohit, setLeaderImgRohit] = useState(() => getLeaderImage('rohit'))
-  
-  function submitUpdate(e) {
+export default function PoliticianDashboard() {
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const [announcement, setAnnouncement] = useState({
+    title: '',
+    content: '',
+    politicianName: ''
+  })
+
+  const [review, setReview] = useState({})
+
+  const [updates, setUpdates] = useState(() => getUpdates())
+  const [responses, setResponses] = useState(() => getResponses())
+
+  const fetchReports = async () => {
+    try {
+      const res = await fetch('https://backendproject-6-0sai.onrender.com/api/posts')
+      const data = await res.json()
+      setReports(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to fetch reports:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchReports()
+    const interval = setInterval(fetchReports, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  function submitAnnouncement(e) {
     e.preventDefault()
-    if (!update.title || !update.content) return
-    addUpdate(update)
-    setUpdate({ title: '', content: '', politicianName: '' })
-    alert('Update posted')
-    setReports(getReports())
+    if (!announcement.title || !announcement.content || !announcement.politicianName) {
+      alert('Please fill all announcement fields')
+      return
+    }
+
+    addUpdate({
+      id: Date.now(),
+      title: announcement.title,
+      content: announcement.content,
+      politicianName: announcement.politicianName
+    })
+
+    setUpdates(getUpdates())
+    setAnnouncement({ title: '', content: '', politicianName: '' })
+    alert('Announcement posted')
   }
 
-  function submitResponse(id) {
-    const message = responses[id]
-    if (!message) return
-    addResponse({ reportId: id, message, politicianName: update.politicianName || 'Politician' })
-    setResponses(r => ({ ...r, [id]: '' }))
-    alert('Response sent')
-    setReports(getReports())
+  function submitReview(e, reportId) {
+    e.preventDefault()
+
+    const current = review[reportId]
+    if (!current?.message || !current?.politicianName || !current?.status) {
+      alert('Please fill all review fields')
+      return
+    }
+
+    addResponse({
+      id: Date.now(),
+      reportId,
+      message: current.message,
+      politicianName: current.politicianName,
+      status: current.status
+    })
+
+    setResponses(getResponses())
+    setReview(prev => ({
+      ...prev,
+      [reportId]: { message: '', politicianName: '', status: '' }
+    }))
+
+    alert('Review submitted')
   }
 
-  function markSolved(id) {
-    const note = prompt('Solution note (optional)') || ''
-    const ok = solveReport(id, note, update.politicianName || 'Politician')
-    if (ok) alert('Issue marked as solved')
-    setReports(getReports())
+  const getLatestResponse = reportId => {
+    return [...responses].reverse().find(r => r.reportId === reportId)
   }
 
   return (
     <section>
-      <h2>Politician Portal</h2>
-      <div className="hero card" style={{ marginBottom: '1rem' }}>
-        <div className="grid">
-          <div className="role-card leader-card">
-            <img className="leader-img" src={leaderImgJagan || 'https://upload.wikimedia.org/wikipedia/commons/6/6d/Y_S_Jagan_Mohan_Reddy.png'} alt="Leader" />
-            <strong>Jagan Mohan Reddy</strong>
-            <span className="badge politician">Public Leader</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload('jagan', setLeaderImgJagan)} />
-          </div>
-          <div className="role-card leader-card">
-            <img className="leader-img" src={leaderImgRohit || 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Rohit_Sharma_portrait.jpg'} alt="Leader" />
-            <strong>Rohit Sharma</strong>
-            <span className="badge politician">Public Leader</span>
-            <input type="file" accept="image/*" onChange={handleImageUpload('rohit', setLeaderImgRohit)} />
-          </div>
-        </div>
-      </div>
-      <form className="card" onSubmit={submitUpdate}>
-        <h3>Post Update</h3>
-        <input placeholder="Your name" value={update.politicianName} onChange={e=>setUpdate(u=>({ ...u, politicianName: e.target.value }))} />
-        <input placeholder="Title" value={update.title} onChange={e=>setUpdate(u=>({ ...u, title: e.target.value }))} />
-        <textarea placeholder="Content" value={update.content} onChange={e=>setUpdate(u=>({ ...u, content: e.target.value }))} />
-        <button type="submit">Publish</button>
-      </form>
+      <h2>Politician Dashboard</h2>
 
-      <div className="card section">
-        <h3>Citizen Reports</h3>
-        {reports.length === 0 ? <p>No reports yet.</p> : (
-          <ul>
-            {reports.filter(r=>r.status!=='solved').map(r => (
-              <li key={r.id}>
-                <strong>{r.title}</strong> — {r.description} <em>({r.citizenName || 'Anonymous'})</em>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <input
-                    placeholder="Write a response"
-                    value={responses[r.id] || ''}
-                    onChange={e=>setResponses(s=>({ ...s, [r.id]: e.target.value }))}
-                  />
-                  <button type="button" onClick={() => submitResponse(r.id)}>Send</button>
-                  <button type="button" onClick={() => markSolved(r.id)}>Mark Solved</button>
+      <div className="grid">
+        <form className="card" onSubmit={submitAnnouncement}>
+          <h3>Post Announcement</h3>
+          <input
+            type="text"
+            placeholder="Politician name"
+            value={announcement.politicianName}
+            onChange={e =>
+              setAnnouncement(prev => ({ ...prev, politicianName: e.target.value }))
+            }
+          />
+          <input
+            type="text"
+            placeholder="Announcement title"
+            value={announcement.title}
+            onChange={e =>
+              setAnnouncement(prev => ({ ...prev, title: e.target.value }))
+            }
+          />
+          <textarea
+            placeholder="Announcement content"
+            value={announcement.content}
+            onChange={e =>
+              setAnnouncement(prev => ({ ...prev, content: e.target.value }))
+            }
+          />
+          <button type="submit">Post Announcement</button>
+        </form>
+
+        <div className="card">
+          <h3>Citizen Issues</h3>
+
+          {loading ? (
+            <p>Loading...</p>
+          ) : reports.length === 0 ? (
+            <p>No reports yet.</p>
+          ) : (
+            reports.map(report => {
+              const latest = getLatestResponse(report.id)
+
+              return (
+                <div key={report.id} className="issue-box">
+                  <h4>{report.title}</h4>
+                  <p>{report.description}</p>
+                  <p><strong>Citizen:</strong> {report.citizenName}</p>
+                  <p>
+                    <strong>Status:</strong> {latest?.status || 'open'}
+                  </p>
+                  {latest?.message && (
+                    <p>
+                      <strong>Latest Review:</strong> {latest.message} <em>({latest.politicianName})</em>
+                    </p>
+                  )}
+
+                  <form onSubmit={e => submitReview(e, report.id)}>
+                    <input
+                      type="text"
+                      placeholder="Politician name"
+                      value={review[report.id]?.politicianName || ''}
+                      onChange={e =>
+                        setReview(prev => ({
+                          ...prev,
+                          [report.id]: {
+                            ...prev[report.id],
+                            politicianName: e.target.value
+                          }
+                        }))
+                      }
+                    />
+
+                    <select
+                      value={review[report.id]?.status || ''}
+                      onChange={e =>
+                        setReview(prev => ({
+                          ...prev,
+                          [report.id]: {
+                            ...prev[report.id],
+                            status: e.target.value
+                          }
+                        }))
+                      }
+                    >
+                      <option value="">Select status</option>
+                      <option value="reviewing">Reviewing</option>
+                      <option value="resolved">Resolved</option>
+                    </select>
+
+                    <textarea
+                      placeholder="Review message"
+                      value={review[report.id]?.message || ''}
+                      onChange={e =>
+                        setReview(prev => ({
+                          ...prev,
+                          [report.id]: {
+                            ...prev[report.id],
+                            message: e.target.value
+                          }
+                        }))
+                      }
+                    />
+
+                    <button type="submit">Submit Review</button>
+                  </form>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
+              )
+            })
+          )}
+        </div>
+
+        <div className="card">
+          <h3>Posted Announcements</h3>
+          {updates.length === 0 ? (
+            <p>No announcements yet.</p>
+          ) : (
+            <ul>
+              {updates.map(item => (
+                <li key={item.id}>
+                  <strong>{item.title}</strong> — {item.content} <em>({item.politicianName})</em>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </section>
   )
 }
-  function handleImageUpload(key, setter) {
-    return (e) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = () => {
-        const url = reader.result
-        setLeaderImage(key, url)
-        setter(url)
-      }
-      reader.readAsDataURL(file)
-    }
-  }

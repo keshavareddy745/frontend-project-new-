@@ -2,131 +2,171 @@ import { useEffect, useState } from 'react'
 import {
   addFeedback,
   getUpdates,
-  getReports,
-  getResponses,
-  fetchPostsFromBackend,
-  createPostInBackend
+  getResponses
 } from '../store.js'
 
 export default function Citizen() {
-  const [report, setReport] = useState({ title: '', description: '', citizenName: '' })
-  const [feedback, setFeedback] = useState({ message: '', citizenName: '' })
+  const [report, setReport] = useState({
+    title: '',
+    description: '',
+    citizenName: ''
+  })
 
-  const updates = getUpdates()
-  const [reports, setReports] = useState(() => getReports())
+  const [feedback, setFeedback] = useState({
+    message: '',
+    citizenName: ''
+  })
+
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const [updates, setUpdates] = useState(() => getUpdates())
   const [responses, setResponses] = useState(() => getResponses())
 
-  // Load reports from backend on mount (optional mapping to your local structure)
+  const fetchReports = async () => {
+    try {
+      const res = await fetch('https://backendproject-6-0sai.onrender.com/api/posts')
+      const data = await res.json()
+      setReports(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to fetch reports:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    fetchPostsFromBackend()
-      .then(posts => {
-        // Map backend posts -> local "reports" shape
-        const mapped = posts.map(p => ({
-          id: p.id,
-          title: p.title,
-          description: p.description,
-          citizenName: p.citizenName,
-          status: 'open',
-          createdAt: new Date().toISOString()
-        }))
-        setReports(mapped)
-      })
-      .catch(err => {
-        console.error('Failed to load reports from backend:', err)
-      })
+    fetchReports()
+    const interval = setInterval(() => {
+      setUpdates(getUpdates())
+      setResponses(getResponses())
+      fetchReports()
+    }, 3000)
+
+    return () => clearInterval(interval)
   }, [])
 
   async function submitReport(e) {
     e.preventDefault()
-    if (!report.title || !report.description) return
+
+    if (!report.title || !report.description || !report.citizenName) {
+      alert('Please fill all fields')
+      return
+    }
 
     try {
-      // send to backend
-      const created = await createPostInBackend({
-        title: report.title,
-        description: report.description,
-        citizenName: report.citizenName
+      const res = await fetch('https://backendproject-6-0sai.onrender.com/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(report)
       })
 
-      // update UI with new report
-      setReports(prev => [
-        ...prev,
-        {
-          id: created.id,
-          title: created.title,
-          description: created.description,
-          citizenName: created.citizenName,
-          status: 'open',
-          createdAt: new Date().toISOString()
-        }
-      ])
+      if (!res.ok) {
+        throw new Error('Failed to create report')
+      }
 
-      setReport({ title: '', description: '', citizenName: '' })
-      alert('Issue reported (saved in backend)')
+      const created = await res.json()
+      setReports(prev => [...prev, created])
+
+      setReport({
+        title: '',
+        description: '',
+        citizenName: ''
+      })
+
+      alert('Issue submitted successfully')
     } catch (err) {
       console.error('Error creating report:', err)
-      alert('Failed to report issue. Please try again.')
+      alert('Failed to submit issue')
     }
   }
 
   function submitFeedback(e) {
     e.preventDefault()
-    if (!feedback.message) return
-    addFeedback(feedback)
+
+    if (!feedback.message || !feedback.citizenName) {
+      alert('Please fill all feedback fields')
+      return
+    }
+
+    addFeedback({
+      id: Date.now(),
+      message: feedback.message,
+      citizenName: feedback.citizenName
+    })
+
     setFeedback({ message: '', citizenName: '' })
     alert('Feedback submitted')
-    setResponses(getResponses())
+  }
+
+  const getLatestResponse = reportId => {
+    return [...responses].reverse().find(r => r.reportId === reportId)
   }
 
   return (
     <section>
-      <h2>Citizen Portal</h2>
+      <h2>Citizen Dashboard</h2>
+
       <div className="grid">
         <form className="card" onSubmit={submitReport}>
           <h3>Report an Issue</h3>
           <input
+            type="text"
             placeholder="Your name"
             value={report.citizenName}
-            onChange={e => setReport(r => ({ ...r, citizenName: e.target.value }))}
+            onChange={e =>
+              setReport(prev => ({ ...prev, citizenName: e.target.value }))
+            }
           />
           <input
-            placeholder="Title"
+            type="text"
+            placeholder="Issue title"
             value={report.title}
-            onChange={e => setReport(r => ({ ...r, title: e.target.value }))}
+            onChange={e =>
+              setReport(prev => ({ ...prev, title: e.target.value }))
+            }
           />
           <textarea
-            placeholder="Description"
+            placeholder="Issue description"
             value={report.description}
-            onChange={e => setReport(r => ({ ...r, description: e.target.value }))}
+            onChange={e =>
+              setReport(prev => ({ ...prev, description: e.target.value }))
+            }
           />
           <button type="submit">Submit Issue</button>
         </form>
 
         <form className="card" onSubmit={submitFeedback}>
-          <h3>Provide Feedback</h3>
+          <h3>Send Feedback</h3>
           <input
+            type="text"
             placeholder="Your name"
             value={feedback.citizenName}
-            onChange={e => setFeedback(f => ({ ...f, citizenName: e.target.value }))}
+            onChange={e =>
+              setFeedback(prev => ({ ...prev, citizenName: e.target.value }))
+            }
           />
           <textarea
-            placeholder="Message"
+            placeholder="Your feedback"
             value={feedback.message}
-            onChange={e => setFeedback(f => ({ ...f, message: e.target.value }))}
+            onChange={e =>
+              setFeedback(prev => ({ ...prev, message: e.target.value }))
+            }
           />
           <button type="submit">Submit Feedback</button>
         </form>
 
         <div className="card">
-          <h3>Latest Updates from Politicians</h3>
+          <h3>Announcements</h3>
           {updates.length === 0 ? (
-            <p>No updates yet.</p>
+            <p>No announcements yet.</p>
           ) : (
             <ul>
-              {updates.map(u => (
-                <li key={u.id}>
-                  <strong>{u.title}</strong> — {u.content}{' '}
-                  <em>({u.politicianName})</em>
+              {updates.map(item => (
+                <li key={item.id}>
+                  <strong>{item.title}</strong> — {item.content} <em>({item.politicianName})</em>
                 </li>
               ))}
             </ul>
@@ -134,30 +174,29 @@ export default function Citizen() {
         </div>
 
         <div className="card">
-          <h3>Solved Issues</h3>
-          {reports.filter(r => r.status === 'solved').length === 0 ? (
-            <p>No solved issues yet.</p>
+          <h3>Your Submitted Issues</h3>
+          {loading ? (
+            <p>Loading...</p>
+          ) : reports.length === 0 ? (
+            <p>No issues submitted yet.</p>
           ) : (
             <ul>
-              {reports
-                .filter(r => r.status === 'solved')
-                .map(r => {
-                  const lastResponse = [...responses]
-                    .reverse()
-                    .find(x => x.reportId === r.id)
-                  return (
-                    <li key={r.id}>
-                      <strong>{r.title}</strong> — {r.description}
-                      {lastResponse ? (
-                        <span>
-                          {' '}
-                          — {lastResponse.message}{' '}
-                          <em>({lastResponse.politicianName})</em>
-                        </span>
-                      ) : null}
-                    </li>
-                  )
-                })}
+              {reports.map(r => {
+                const latest = getLatestResponse(r.id)
+                return (
+                  <li key={r.id}>
+                    <strong>{r.title}</strong> — {r.description} <em>({r.citizenName})</em>
+                    <br />
+                    <strong>Status:</strong> {latest?.status || 'open'}
+                    {latest?.message && (
+                      <>
+                        <br />
+                        <strong>Politician Review:</strong> {latest.message} <em>({latest.politicianName})</em>
+                      </>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
