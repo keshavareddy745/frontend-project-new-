@@ -7,7 +7,7 @@ const defaultData = {
   updates: [],
   responses: [],
   flags: [],
-  users: [{ id: 1, name: 'Admin', role: 'Admin' }],
+  users: [{ id: 1, name: 'Admin', role: 'Admin', password: 'admin' }],
   currentRole: null,
   currentUser: null,
   leaderImages: {},
@@ -124,7 +124,7 @@ export function approvePendingUser(userId) {
   const userIndex = data.pendingUsers.findIndex(u => u.id === userId)
   if (userIndex !== -1) {
     const [approvedUser] = data.pendingUsers.splice(userIndex, 1)
-    data.users.push({ id: approvedUser.id, name: approvedUser.email, role: approvedUser.role })
+    data.users.push({ id: approvedUser.id, name: approvedUser.email, role: approvedUser.role, password: approvedUser.password })
     save(data)
     return true
   }

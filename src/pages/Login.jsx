@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { setCurrentRole, setCurrentUser } from '../store.js'
+import { setCurrentRole, setCurrentUser, getUsers } from '../store.js'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -31,8 +31,17 @@ export default function Login() {
       setCaptchaInput('')
       return
     }
+
+    const allUsers = getUsers()
+    const foundUser = allUsers.find(u => (u.name === email || u.email === email) && u.password === password && u.role === role)
+
+    if (!foundUser) {
+      alert('Login failed. Please make sure your account is approved and your credentials are correct.')
+      return
+    }
+
     setCurrentRole(role)
-    setCurrentUser({ email })
+    setCurrentUser({ email: foundUser.name || foundUser.email })
     navigate('/dashboard')
   }
 
