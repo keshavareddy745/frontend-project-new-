@@ -11,6 +11,7 @@ const defaultData = {
   currentRole: null,
   currentUser: null,
   leaderImages: {},
+  pendingUsers: [],
 }
 
 function emitChange() {
@@ -38,6 +39,7 @@ function load() {
       flags: Array.isArray(parsed.flags) ? parsed.flags : [],
       users: Array.isArray(parsed.users) ? parsed.users : defaultData.users,
       leaderImages: parsed.leaderImages || {},
+      pendingUsers: Array.isArray(parsed.pendingUsers) ? parsed.pendingUsers : [],
     }
   } catch {
     return { ...defaultData }
@@ -103,6 +105,44 @@ export function addUser(user) {
   data.users.push({ id, ...user })
   save(data)
   return id
+}
+
+export function addPendingUser(user) {
+  const data = load()
+  const id = Date.now()
+  data.pendingUsers.push({ id, ...user, status: 'pending' })
+  save(data)
+  return id
+}
+
+export function getPendingUsers() {
+  return load().pendingUsers
+}
+
+export function approvePendingUser(userId) {
+  const data = load()
+  const userIndex = data.pendingUsers.findIndex(u => u.id === userId)
+  if (userIndex !== -1) {
+    const [approvedUser] = data.pendingUsers.splice(userIndex, 1)
+    data.users.push({ id: approvedUser.id, name: approvedUser.email, role: approvedUser.role })
+    save(data)
+    return true
+  }
+  return false
+}
+
+export function removePendingUser(userId) {
+  const data = load()
+  data.pendingUsers = data.pendingUsers.filter(u => u.id !== userId)
+  save(data)
+  return true
+}
+
+export function removeUser(userId) {
+  const data = load()
+  data.users = data.users.filter(u => u.id !== userId)
+  save(data)
+  return true
 }
 
 export function addReport(report) {

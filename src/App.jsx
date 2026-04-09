@@ -7,6 +7,7 @@ import Politician from './pages/Politician.jsx'
 import Moderator from './pages/Moderator.jsx'
 import Admin from './pages/Admin.jsx'
 import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
 import { getCurrentRole, logout } from './store.js'
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
       <main className="container">
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/home" element={<Home />} />
           <Route path="/dashboard" element={role ? <Navigate to={`/${role.toLowerCase()}`} replace /> : <Navigate to="/" replace />} />
           <Route path="/citizen" element={role === 'Citizen' ? <Citizen /> : <Navigate to="/" replace />} />
