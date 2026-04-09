@@ -33,7 +33,14 @@ export default function Login() {
     }
 
     const allUsers = getUsers()
-    const foundUser = allUsers.find(u => (u.name === email || u.email === email) && u.password === password && u.role === role)
+    
+    // Hardcoded check for default Admin to ensure it always works
+    let foundUser = null;
+    if (email === 'REDDY143' && password === 'ADMIN@1432' && role === 'Admin') {
+      foundUser = { id: 1, name: 'REDDY143', role: 'Admin', email: 'REDDY143' };
+    } else {
+      foundUser = allUsers.find(u => (u.name === email || u.email === email) && u.password === password && u.role === role);
+    }
 
     if (!foundUser) {
       alert('Login failed. Please make sure your account is approved and your credentials are correct.')
