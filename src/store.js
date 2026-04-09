@@ -7,7 +7,7 @@ const defaultData = {
   updates: [],
   responses: [],
   flags: [],
-  users: [{ id: 1, name: 'RED DY143', role: 'Admin', password: 'ADMIN@1432' }],
+  users: [{ id: 1, name: 'REDDY143', role: 'Admin', password: 'ADMIN@1432' }],
   currentRole: null,
   currentUser: null,
   leaderImages: {},
