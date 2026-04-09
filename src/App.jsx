@@ -8,22 +8,26 @@ import Moderator from './pages/Moderator.jsx'
 import Admin from './pages/Admin.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
-import { getCurrentRole, logout } from './store.js'
+import { getCurrentRole, logout, getPendingUsers } from './store.js'
 
 function App() {
   const [role, setRole] = useState(() => getCurrentRole())
+  const [pendingCount, setPendingCount] = useState(() => getPendingUsers().length)
 
   useEffect(() => {
     function sync() {
       setRole(getCurrentRole())
+      setPendingCount(getPendingUsers().length)
     }
 
     window.addEventListener('storage', sync)
     window.addEventListener('fedf_role_change', sync)
+    window.addEventListener('fedf_data_change', sync)
 
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('fedf_role_change', sync)
+      window.removeEventListener('fedf_data_change', sync)
     }
   }, [])
 
@@ -37,7 +41,9 @@ function App() {
           <NavLink to="/citizen">Citizen</NavLink>
           <NavLink to="/politician">Politician</NavLink>
           <NavLink to="/moderator">Moderator</NavLink>
-          <NavLink to="/admin">Admin</NavLink>
+          <NavLink to="/admin">
+            Admin {role === 'Admin' && pendingCount > 0 && <span style={{ background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.7em', marginLeft: '4px' }}>{pendingCount}</span>}
+          </NavLink>
         </nav>
         <div>
           {role ? (

@@ -1,10 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { addUser, getUsers, clearData, getPendingUsers, approvePendingUser, removePendingUser, removeUser } from '../store.js'
 
 export default function Admin() {
   const [user, setUser] = useState({ name: '', role: 'Citizen' })
   const [pendingUsers, setPendingUsers] = useState(() => getPendingUsers())
   const [allUsers, setAllUsers] = useState(() => getUsers())
+
+  useEffect(() => {
+    function refresh() {
+      setPendingUsers(getPendingUsers())
+      setAllUsers(getUsers())
+    }
+    window.addEventListener('fedf_data_change', refresh)
+    return () => window.removeEventListener('fedf_data_change', refresh)
+  }, [])
 
   function submitUser(e) {
     e.preventDefault()
