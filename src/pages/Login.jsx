@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { setCurrentRole, setCurrentUser, getUsers } from '../store.js'
 
 export default function Login() {
@@ -248,7 +248,7 @@ export default function Login() {
               }}>&gt;</span>
             </button>
             <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.9em', color: '#555' }}>
-              Don't have an account? <a href="/register" style={{ color: '#FF5722', fontWeight: 'bold', textDecoration: 'none' }}>Sign Up</a>
+              Don't have an account? <Link to="/register" style={{ color: '#FF5722', fontWeight: 'bold', textDecoration: 'none' }}>Sign Up</Link>
             </div>
           </form>
         </div>
