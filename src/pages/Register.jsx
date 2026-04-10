@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addPendingUser } from '../store.js' // We will create this function later
+import { addPendingUser } from '../store.js'
 
 export default function Register() {
   const [email, setEmail] = useState('')

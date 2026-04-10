@@ -25,7 +25,7 @@ export default function Admin() {
   }
 
   function handleApprove(userId, email, role) {
-    approvePendingUser(userId, { email, role })
+    approvePendingUser(userId)
     setPendingUsers(getPendingUsers())
     setAllUsers(getUsers())
     alert(`User ${email} approved as ${role}.`)
