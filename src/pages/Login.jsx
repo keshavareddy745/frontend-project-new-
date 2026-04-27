@@ -58,7 +58,7 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundImage: 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")', // High-quality dashboard/analytics background
+      backgroundImage: 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")', // Bright analytics dashboard background
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
@@ -67,30 +67,32 @@ export default function Login() {
       boxSizing: 'border-box',
       position: 'relative',
       width: '100%',
-      marginTop: '-1.25rem' // Negate the default margin if any
+      minHeight: '100vh',
+      overflow: 'hidden'
     }}>
-      {/* Overlay to darken the background slightly for better contrast */}
+      {/* Subtle overlay to help form readability without hiding the dashboard */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         zIndex: 0
       }}></div>
 
       <div style={{
         display: 'flex',
-        background: 'rgba(255, 255, 255, 0.9)', // Semi-transparent white background
-        backdropFilter: 'blur(10px)', // Blur effect for the background
-        borderRadius: '15px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        background: 'rgba(255, 255, 255, 0.85)', // Increased transparency for better background visibility
+        backdropFilter: 'blur(8px)',
+        borderRadius: '20px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
         overflow: 'hidden',
-        maxWidth: '900px',
-        width: '95%',
+        maxWidth: '950px',
+        width: '90%',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        border: '1px solid rgba(255,255,255,0.5)'
       }}>
         {/* Left Section */}
         <div style={{
