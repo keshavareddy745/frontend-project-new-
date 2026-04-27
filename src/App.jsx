@@ -55,16 +55,16 @@ function App() {
         </div>
       </header>
 
-      <main className="container">
+      <main>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<div className="container"><Home /></div>} />
           <Route path="/dashboard" element={role ? <Navigate to={`/${role.toLowerCase()}`} replace /> : <Navigate to="/" replace />} />
-          <Route path="/citizen" element={role === 'Citizen' ? <Citizen /> : <Navigate to="/" replace />} />
-          <Route path="/politician" element={role === 'Politician' ? <Politician /> : <Navigate to="/" replace />} />
-          <Route path="/moderator" element={role === 'Moderator' ? <Moderator /> : <Navigate to="/" replace />} />
-          <Route path="/admin" element={role === 'Admin' ? <Admin /> : <Navigate to="/" replace />} />
+          <Route path="/citizen" element={role === 'Citizen' ? <div className="container"><Citizen /></div> : <Navigate to="/" replace />} />
+          <Route path="/politician" element={role === 'Politician' ? <div className="container"><Politician /></div> : <Navigate to="/" replace />} />
+          <Route path="/moderator" element={role === 'Moderator' ? <div className="container"><Moderator /></div> : <Navigate to="/" replace />} />
+          <Route path="/admin" element={role === 'Admin' ? <div className="container"><Admin /></div> : <Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>

@@ -58,13 +58,16 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundImage: 'url("https://img.freepik.com/free-vector/modern-dashboard-interface-with-infographic-elements_23-2148291414.jpg?t=st=1738153316~exp=1738156916~hmac=50e4b8f8d6f0c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6&w=1380")', // Dashboard background image
+      backgroundImage: 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")', // High-quality dashboard/analytics background
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
       fontFamily: 'Arial, sans-serif',
       boxSizing: 'border-box',
-      position: 'relative'
+      position: 'relative',
+      width: '100%',
+      marginTop: '-1.25rem' // Negate the default margin if any
     }}>
       {/* Overlay to darken the background slightly for better contrast */}
       <div style={{
@@ -124,12 +127,15 @@ export default function Login() {
           }}></div>
 
           <h1 style={{
-            fontSize: '2em',
+            fontSize: '2.4em',
             marginBottom: '30px',
             textAlign: 'center',
-            color: '#333',
-            fontWeight: 'normal'
-          }}>interaction btw people and citizens</h1>
+            color: '#1B5E20', // Even darker green for better contrast
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
+          }}>Interaction Between Politicians and Citizens</h1>
 
           <form onSubmit={submit} style={{
             width: '100%',
@@ -197,15 +203,18 @@ export default function Login() {
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
               <span style={{
-                fontSize: '1.5em',
+                fontSize: '1.8em',
                 fontWeight: 'bold',
                 fontStyle: 'italic',
-                textDecoration: 'line-through',
                 color: '#FF5722',
-                background: '#f0f0f0',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                letterSpacing: '2px'
+                background: '#f8f8f8',
+                padding: '8px 15px',
+                borderRadius: '8px',
+                letterSpacing: '5px',
+                border: '1px dashed #FF5722',
+                textDecoration: 'line-through',
+                userSelect: 'none',
+                fontFamily: '"Courier New", Courier, monospace'
               }}>{captchaText}</span>
               <button type="button" onClick={() => setCaptchaText(generateCaptcha())} style={{
                 background: '#eee',
@@ -298,16 +307,24 @@ export default function Login() {
           }}>
             {/* Placeholder for the image of politicians */}
             <img
-              src="https://via.placeholder.com/300x200/2E7D32/FFFFFF?text=YS+JAGAN+VS+VIJAY+THALAPATHY" // Placeholder image
-              alt="YS Jagan vs Vijay Thalapathy"
+              src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" // High-quality governance/government building image
+              alt="Governance"
               style={{
                 maxWidth: '100%',
                 height: 'auto',
-                borderRadius: '5px',
-                border: '2px solid white' // White border around the image
+                borderRadius: '8px',
+                border: '3px solid white',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
               }}
             />
-            <h3 style={{ color: 'white', textAlign: 'center', margin: '0' }}>YS JAGAN VS VIJAY THALAPATHY</h3>
+            <h3 style={{ 
+              color: 'white', 
+              textAlign: 'center', 
+              margin: '10px 0 0 0',
+              fontSize: '1.2em',
+              fontWeight: 'bold',
+              textShadow: '1px 1px 4px rgba(0,0,0,0.3)'
+            }}>Building a Better Future Together</h3>
           </div>
         </div>
       </div>
