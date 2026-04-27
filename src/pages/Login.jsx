@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { setCurrentRole, setCurrentUser, getUsers } from '../store.js'
 
@@ -9,6 +9,27 @@ export default function Login() {
   const [captchaText, setCaptchaText] = useState(() => generateCaptcha())
   const [captchaInput, setCaptchaInput] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Set background on body for full-screen coverage
+    const originalBg = document.body.style.background;
+    const originalBgSize = document.body.style.backgroundSize;
+    const originalBgPos = document.body.style.backgroundPosition;
+    
+    document.body.style.backgroundImage = 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")';
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+
+    return () => {
+      // Restore original background when leaving the page
+      document.body.style.backgroundImage = '';
+      document.body.style.background = originalBg;
+      document.body.style.backgroundSize = originalBgSize;
+      document.body.style.backgroundPosition = originalBgPos;
+    };
+  }, []);
 
   function generateCaptcha() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -58,16 +79,11 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundImage: 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")', // Bright analytics dashboard background
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
       fontFamily: 'Arial, sans-serif',
       boxSizing: 'border-box',
       position: 'relative',
       width: '100%',
-      minHeight: '100vh',
+      background: 'transparent', // Let body background show through
       overflow: 'hidden'
     }}>
       {/* Subtle overlay to help form readability without hiding the dashboard */}
