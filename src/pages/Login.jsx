@@ -5,31 +5,19 @@ import { setCurrentRole, setCurrentUser, getUsers } from '../store.js'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('Citizen') // Default role
-  const [captchaText, setCaptchaText] = useState(() => generateCaptcha())
+  const [role, setRole] = useState('Citizen')
+  const [captchaText, setCaptchaText] = useState(generateCaptcha())
   const [captchaInput, setCaptchaInput] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Set background on body for full-screen coverage
-    const originalBg = document.body.style.background;
-    const originalBgSize = document.body.style.backgroundSize;
-    const originalBgPos = document.body.style.backgroundPosition;
-    
-    document.body.style.backgroundImage = 'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")';
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    document.body.style.backgroundRepeat = 'no-repeat';
-
-    return () => {
-      // Restore original background when leaving the page
-      document.body.style.backgroundImage = '';
-      document.body.style.background = originalBg;
-      document.body.style.backgroundSize = originalBgSize;
-      document.body.style.backgroundPosition = originalBgPos;
-    };
-  }, []);
+    document.body.style.margin = 0
+    document.body.style.backgroundImage =
+      'url("https://upload.wikimedia.org/wikipedia/commons/6/6c/Y._S._Jagan_Mohan_Reddy.jpg")'
+    document.body.style.backgroundSize = 'cover'
+    document.body.style.backgroundPosition = 'center'
+    document.body.style.backgroundRepeat = 'no-repeat'
+  }, [])
 
   function generateCaptcha() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -42,310 +30,226 @@ export default function Login() {
 
   function submit(e) {
     e.preventDefault()
+
     if (!email || !password) {
-      alert('Please enter both username and password.')
+      alert('Enter credentials')
       return
     }
+
     if (captchaInput !== captchaText) {
-      alert('Incorrect captcha. Please try again.')
+      alert('Wrong captcha')
       setCaptchaText(generateCaptcha())
       setCaptchaInput('')
       return
     }
 
-    const allUsers = getUsers()
-    
-    // Hardcoded check for default Admin to ensure it always works
-    let foundUser = null;
-    if (email === 'REDDY143' && password === 'ADMIN@1432' && role === 'Admin') {
-      foundUser = { id: 1, name: 'REDDY143', role: 'Admin', email: 'REDDY143' };
-    } else {
-      foundUser = allUsers.find(u => (u.name === email || u.email === email) && u.password === password && u.role === role);
-    }
+    const users = getUsers()
+
+    let foundUser =
+      email === 'REDDY143' && password === 'ADMIN@1432' && role === 'Admin'
+        ? { name: 'REDDY143', role: 'Admin' }
+        : users.find(
+            u =>
+              (u.name === email || u.email === email) &&
+              u.password === password &&
+              u.role === role
+          )
 
     if (!foundUser) {
-      alert('Login failed. Please make sure your account is approved and your credentials are correct.')
+      alert('Login failed')
       return
     }
 
     setCurrentRole(role)
-    setCurrentUser({ email: foundUser.name || foundUser.email })
+    setCurrentUser({ email: foundUser.name })
     navigate('/dashboard')
   }
 
   return (
     <div style={{
+      minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif',
-      boxSizing: 'border-box',
-      position: 'relative',
-      width: '100%',
-      background: 'transparent', // Let body background show through
-      overflow: 'hidden'
+      background: 'rgba(0,0,0,0.6)'
     }}>
-      {/* Subtle overlay to help form readability without hiding the dashboard */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        zIndex: 0
-      }}></div>
 
+      {/* MAIN CARD */}
       <div style={{
         display: 'flex',
-        background: 'rgba(255, 255, 255, 0.85)', // Increased transparency for better background visibility
-        backdropFilter: 'blur(8px)',
+        width: '950px',
         borderRadius: '20px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
         overflow: 'hidden',
-        maxWidth: '950px',
-        width: '90%',
-        position: 'relative',
-        zIndex: 1,
-        border: '1px solid rgba(255,255,255,0.5)'
+        backdropFilter: 'blur(12px)',
+        background: 'rgba(255,255,255,0.15)',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.6)'
       }}>
-        {/* Left Section */}
+
+        {/* LEFT SIDE */}
         <div style={{
           flex: 1,
           padding: '40px',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          background: 'transparent'
+          position: 'relative'
         }}>
-          {/* Orange Circle */}
+
+          {/* Circles */}
           <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            width: '80px',
-            height: '80px',
+            width: 70, height: 70,
             borderRadius: '50%',
-            background: '#ffab91', // Orange color from image
-            zIndex: 1
-          }}></div>
-          {/* Light Green Circle */}
+            background: '#ffab91',
+            position: 'absolute',
+            top: 20, left: 20
+          }} />
           <div style={{
-            position: 'absolute',
-            bottom: '20px',
-            right: '20px',
-            width: '60px',
-            height: '60px',
+            width: 50, height: 50,
             borderRadius: '50%',
-            background: '#a7ffeb', // Light green color from image
-            zIndex: 1
-          }}></div>
+            background: '#80cbc4',
+            position: 'absolute',
+            bottom: 20, right: 20
+          }} />
 
           <h1 style={{
-            fontSize: '2.4em',
-            marginBottom: '30px',
             textAlign: 'center',
-            color: '#1B5E20', // Even darker green for better contrast
+            color: '#fff',
             fontWeight: '900',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            textShadow: '1px 1px 2px rgba(255,255,255,0.5)'
-          }}>Interaction Between Politicians and Citizens</h1>
+            marginBottom: '30px'
+          }}>
+            INTERACTION BETWEEN <br />
+            POLITICIANS AND CITIZENS
+          </h1>
 
           <form onSubmit={submit} style={{
-            width: '100%',
-            maxWidth: '300px',
-            padding: '20px',
-            boxShadow: 'none',
-            border: 'none',
             display: 'flex',
             flexDirection: 'column',
             gap: '15px'
           }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-              Username
-              <input
-                type="text"
-                value={email}
-                placeholder="Username"
-                onChange={e=>setEmail(e.target.value)}
+
+            <input
+              placeholder="Username"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              style={inputStyle}
+            />
+
+            <select
+              value={role}
+              onChange={e => setRole(e.target.value)}
+              style={inputStyle}
+            >
+              <option>Citizen</option>
+              <option>Politician</option>
+              <option>Moderator</option>
+              <option>Admin</option>
+            </select>
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={inputStyle}
+            />
+
+            {/* CAPTCHA */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <span style={{
+                fontFamily: 'monospace',
+                fontSize: 22,
+                fontWeight: 'bold',
+                background: '#fff',
+                color: '#d32f2f', // Dark red for visibility
+                padding: '8px 12px',
+                border: '2px dashed #d32f2f',
+                letterSpacing: 4,
+                borderRadius: '5px',
+                userSelect: 'none',
+                textDecoration: 'line-through'
+              }}>
+                {captchaText}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setCaptchaText(generateCaptcha())}
                 style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '5px',
-                  marginTop: '5px',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </label>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-              Role
-              <select
-                value={role}
-                onChange={e => setRole(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '5px',
-                  marginTop: '5px',
-                  boxSizing: 'border-box'
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: 'linear-gradient(to right, #ff7e5f, #feb47b)',
+                  cursor: 'pointer'
                 }}
               >
-                <option>Citizen</option>
-                <option>Politician</option>
-                <option>Moderator</option>
-                <option>Admin</option>
-              </select>
-            </label>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-              Password
-              <input
-                type="password"
-                value={password}
-                placeholder="Password"
-                onChange={e=>setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '5px',
-                  marginTop: '5px',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-              <span style={{
-                fontSize: '1.8em',
-                fontWeight: 'bold',
-                fontStyle: 'italic',
-                color: '#FF5722',
-                background: '#f8f8f8',
-                padding: '8px 15px',
-                borderRadius: '8px',
-                letterSpacing: '5px',
-                border: '1px dashed #FF5722',
-                textDecoration: 'line-through',
-                userSelect: 'none',
-                fontFamily: '"Courier New", Courier, monospace'
-              }}>{captchaText}</span>
-              <button type="button" onClick={() => setCaptchaText(generateCaptcha())} style={{
-                background: '#eee',
-                color: '#333',
-                border: '1px solid #ddd',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '0.8em',
-                fontWeight: 'normal'
-              }}>Refresh</button>
+                Refresh
+              </button>
             </div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-              Enter Captcha
-              <input
-                type="text"
-                value={captchaInput}
-                placeholder="Enter Captcha"
-                onChange={e=>setCaptchaInput(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '5px',
-                  marginTop: '5px',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </label>
-            <div style={{ textAlign: 'right', marginBottom: '15px' }}>
-              <a href="#" style={{ fontSize: '0.8em', color: '#666', textDecoration: 'none' }}>Forgot Password?</a>
-            </div>
-            <button type="submit" style={{
-              background: 'linear-gradient(to right, #4CAF50, #8BC34A)', // Green gradient
-              color: 'white',
+
+            <input
+              placeholder="Enter Captcha"
+              value={captchaInput}
+              onChange={e => setCaptchaInput(e.target.value)}
+              style={inputStyle}
+            />
+
+            <button style={{
+              padding: 12,
+              borderRadius: 8,
               border: 'none',
-              padding: '12px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '1em',
+              background: 'linear-gradient(to right, #4CAF50, #8BC34A)',
+              color: '#fff',
               fontWeight: 'bold',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '10px'
+              cursor: 'pointer'
             }}>
-              LOGIN
-              <span style={{
-                background: '#ffab91', // Orange color for the arrow button
-                borderRadius: '5px',
-                padding: '5px 10px',
-                fontSize: '1.2em',
-                lineHeight: '1',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>&gt;</span>
+              LOGIN →
             </button>
-            <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.9em', color: '#555' }}>
-              Don't have an account? <Link to="/register" style={{ color: '#FF5722', fontWeight: 'bold', textDecoration: 'none' }}>Sign Up</Link>
-            </div>
+
+            <p style={{ textAlign: 'center', color: '#fff' }}>
+              Don’t have an account?{' '}
+              <Link to="/register" style={{ color: '#ffcc80' }}>
+                Sign Up
+              </Link>
+            </p>
+
           </form>
         </div>
 
-        {/* Right Section */}
+        {/* RIGHT SIDE */}
         <div style={{
           flex: 1,
-          background: '#2E7D32', // Dark green background for the image section
+          background: 'linear-gradient(135deg, #2E7D32, #1B5E20)',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
-          padding: '20px',
-          position: 'relative'
+          justifyContent: 'center'
         }}>
-          {/* Top and Bottom Green Bars */}
-          <div style={{ position: 'absolute', top: '0', left: '0', width: '100%', height: '20px', background: '#1B5E20' }}></div>
-          <div style={{ position: 'absolute', bottom: '0', left: '0', width: '100%', height: '20px', background: '#1B5E20' }}></div>
-
-          {/* Image and Text Container */}
           <div style={{
-            background: 'rgba(0,0,0,0.3)', // Semi-transparent overlay for the image
-            borderRadius: '10px',
-            padding: '15px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '10px',
-            zIndex: 2
+            textAlign: 'center',
+            color: '#fff'
           }}>
-            {/* Placeholder for the image of politicians */}
             <img
-              src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" // High-quality governance/government building image
-              alt="Governance"
+              src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Y._S._Jagan_Mohan_Reddy.jpg"
+              alt="Jagan"
               style={{
-                maxWidth: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                border: '3px solid white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                width: '220px',
+                borderRadius: '10px',
+                border: '3px solid white'
               }}
             />
-            <h3 style={{ 
-              color: 'white', 
-              textAlign: 'center', 
-              margin: '10px 0 0 0',
-              fontSize: '1.2em',
-              fontWeight: 'bold',
-              textShadow: '1px 1px 4px rgba(0,0,0,0.3)'
-            }}>Building a Better Future Together</h3>
+            <h3 style={{ marginTop: 15 }}>
+              Building a Better Future Together
+            </h3>
           </div>
         </div>
+
       </div>
     </div>
   )
+}
+
+/* INPUT STYLE */
+const inputStyle = {
+  padding: '12px',
+  borderRadius: '8px',
+  border: 'none',
+  background: 'rgba(0,0,0,0.7)',
+  color: '#fff',
+  outline: 'none'
 }
