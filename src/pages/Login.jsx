@@ -58,19 +58,36 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%)', // Light blue-green gradient
+      backgroundImage: 'url("https://img.freepik.com/free-vector/modern-dashboard-interface-with-infographic-elements_23-2148291414.jpg?t=st=1738153316~exp=1738156916~hmac=50e4b8f8d6f0c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6c6b6&w=1380")', // Dashboard background image
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
       fontFamily: 'Arial, sans-serif',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      position: 'relative'
     }}>
+      {/* Overlay to darken the background slightly for better contrast */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        zIndex: 0
+      }}></div>
+
       <div style={{
         display: 'flex',
-        background: 'white',
-        borderRadius: '10px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        background: 'rgba(255, 255, 255, 0.9)', // Semi-transparent white background
+        backdropFilter: 'blur(10px)', // Blur effect for the background
+        borderRadius: '15px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
         overflow: 'hidden',
         maxWidth: '900px',
-        width: '100%',
-        position: 'relative'
+        width: '95%',
+        position: 'relative',
+        zIndex: 1
       }}>
         {/* Left Section */}
         <div style={{
@@ -81,7 +98,7 @@ export default function Login() {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'white'
+          background: 'transparent'
         }}>
           {/* Orange Circle */}
           <div style={{
