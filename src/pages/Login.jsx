@@ -94,13 +94,6 @@ export default function Login() {
 
           {/* Circles */}
           <div style={{
-            width: 70, height: 70,
-            borderRadius: '50%',
-            background: '#ffab91',
-            position: 'absolute',
-            top: 20, left: 20
-          }} />
-          <div style={{
             width: 50, height: 50,
             borderRadius: '50%',
             background: '#80cbc4',
