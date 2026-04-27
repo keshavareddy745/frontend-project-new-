@@ -13,9 +13,10 @@ export default function Login() {
   useEffect(() => {
     document.body.style.margin = 0
     document.body.style.backgroundImage =
-      'url("https://upload.wikimedia.org/wikipedia/commons/6/6c/Y._S._Jagan_Mohan_Reddy.jpg")'
+      'url("https://www.ap.gov.in/wp-content/uploads/2022/01/CM-Jagan-scaled.jpg")' // Professional background featuring the CM
     document.body.style.backgroundSize = 'cover'
     document.body.style.backgroundPosition = 'center'
+    document.body.style.backgroundAttachment = 'fixed'
     document.body.style.backgroundRepeat = 'no-repeat'
   }, [])
 
@@ -92,20 +93,13 @@ export default function Login() {
           position: 'relative'
         }}>
 
-          {/* Circles */}
-          <div style={{
-            width: 50, height: 50,
-            borderRadius: '50%',
-            background: '#80cbc4',
-            position: 'absolute',
-            bottom: 20, right: 20
-          }} />
-
           <h1 style={{
             textAlign: 'center',
             color: '#fff',
             fontWeight: '900',
-            marginBottom: '30px'
+            marginBottom: '30px',
+            fontSize: '2.4em',
+            textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
           }}>
             INTERACTION BETWEEN <br />
             POLITICIANS AND CITIZENS
