@@ -13,7 +13,7 @@ export default function Login() {
   useEffect(() => {
     document.body.style.margin = 0
     document.body.style.backgroundImage =
-      'url("https://www.ap.gov.in/wp-content/uploads/2022/01/CM-Jagan-scaled.jpg")' // Professional background featuring the CM
+      'url("https://images.unsplash.com/photo-1551288049-bbbda536339a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")' // Professional dashboard background
     document.body.style.backgroundSize = 'cover'
     document.body.style.backgroundPosition = 'center'
     document.body.style.backgroundAttachment = 'fixed'
@@ -72,7 +72,7 @@ export default function Login() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      background: 'rgba(0,0,0,0.6)'
+      background: 'transparent'
     }}>
 
       {/* MAIN CARD */}
@@ -81,9 +81,10 @@ export default function Login() {
         width: '950px',
         borderRadius: '20px',
         overflow: 'hidden',
-        backdropFilter: 'blur(12px)',
-        background: 'rgba(255,255,255,0.15)',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.6)'
+        backdropFilter: 'blur(15px)',
+        background: 'rgba(255,255,255,0.8)',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+        border: '1px solid rgba(255,255,255,0.4)'
       }}>
 
         {/* LEFT SIDE */}
@@ -95,11 +96,11 @@ export default function Login() {
 
           <h1 style={{
             textAlign: 'center',
-            color: '#fff',
+            color: '#1B5E20', // Dark green for title
             fontWeight: '900',
             marginBottom: '30px',
             fontSize: '2.4em',
-            textShadow: '2px 2px 8px rgba(0,0,0,0.8)'
+            textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
           }}>
             INTERACTION BETWEEN <br />
             POLITICIANS AND CITIZENS
@@ -189,9 +190,9 @@ export default function Login() {
               LOGIN →
             </button>
 
-            <p style={{ textAlign: 'center', color: '#fff' }}>
+            <p style={{ textAlign: 'center', color: '#555' }}>
               Don’t have an account?{' '}
-              <Link to="/register" style={{ color: '#ffcc80' }}>
+              <Link to="/register" style={{ color: '#2E7D32', fontWeight: 'bold' }}>
                 Sign Up
               </Link>
             </p>
@@ -212,15 +213,20 @@ export default function Login() {
             color: '#fff'
           }}>
             <img
-              src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Y._S._Jagan_Mohan_Reddy.jpg"
+              src="https://www.ap.gov.in/wp-content/uploads/2022/01/CM-Jagan-scaled.jpg"
               alt="Jagan"
               style={{
-                width: '220px',
-                borderRadius: '10px',
-                border: '3px solid white'
+                width: '280px',
+                borderRadius: '15px',
+                border: '4px solid white',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.4)'
               }}
             />
-            <h3 style={{ marginTop: 15 }}>
+            <h3 style={{ 
+              marginTop: 20,
+              fontSize: '1.5em',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+            }}>
               Building a Better Future Together
             </h3>
           </div>
@@ -235,8 +241,8 @@ export default function Login() {
 const inputStyle = {
   padding: '12px',
   borderRadius: '8px',
-  border: 'none',
-  background: 'rgba(0,0,0,0.7)',
-  color: '#fff',
+  border: '1px solid rgba(0,0,0,0.1)',
+  background: 'rgba(255,255,255,0.9)',
+  color: '#333',
   outline: 'none'
 }
