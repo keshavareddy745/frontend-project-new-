@@ -21,8 +21,18 @@ export default function Register() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#e0f7fa' }}>
-      <div style={{ background: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div style={{ 
+        background: 'rgba(255, 255, 255, 0.95)', 
+        backdropFilter: 'blur(20px)',
+        borderRadius: '24px', 
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', 
+        padding: '40px', 
+        maxWidth: '400px', 
+        width: '100%', 
+        textAlign: 'center',
+        border: '1px solid rgba(255, 255, 255, 0.3)'
+      }}>
         <h2 style={{ marginBottom: '30px', color: '#333' }}>Register New Account</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>

@@ -106,40 +106,152 @@ export default function Citizen() {
   }
 
   return (
-    <section>
-      <h2>Citizen Dashboard</h2>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <div className="dashboard-title">
+          <h2>Citizen Dashboard</h2>
+          <p>Welcome back! Here's what's happening in your community.</p>
+        </div>
+        <div className="dashboard-actions">
+          <button className="action-btn btn-primary" onClick={() => document.getElementById('report-form').scrollIntoView({ behavior: 'smooth' })}>
+            + Report New Issue
+          </button>
+        </div>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <span className="stat-label">Your Issues</span>
+          <span className="stat-value">{reports.length}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Announcements</span>
+          <span className="stat-value">{updates.length}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Resolved</span>
+          <span className="stat-value">
+            {reports.filter(r => getLatestResponse(r.id)?.status === 'resolved').length}
+          </span>
+        </div>
+      </div>
 
       <div className="grid">
-        <form className="card" onSubmit={submitReport}>
+        <div id="report-form" className="card">
           <h3>Report an Issue</h3>
-          <input
-            type="text"
-            placeholder="Your name"
-            value={report.citizenName}
-            onChange={e =>
-              setReport(prev => ({ ...prev, citizenName: e.target.value }))
-            }
-          />
-          <input
-            type="text"
-            placeholder="Issue title"
-            value={report.title}
-            onChange={e =>
-              setReport(prev => ({ ...prev, title: e.target.value }))
-            }
-          />
-          <textarea
-            placeholder="Issue description"
-            value={report.description}
-            onChange={e =>
-              setReport(prev => ({ ...prev, description: e.target.value }))
-            }
-          />
-          <button type="submit">Submit Issue</button>
-        </form>
+          <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Your name"
+              value={report.citizenName}
+              onChange={e =>
+                setReport(prev => ({ ...prev, citizenName: e.target.value }))
+              }
+            />
+            <input
+              type="text"
+              placeholder="Issue title"
+              value={report.title}
+              onChange={e =>
+                setReport(prev => ({ ...prev, title: e.target.value }))
+              }
+            />
+            <textarea
+              placeholder="Describe the issue in detail..."
+              style={{ minHeight: '120px' }}
+              value={report.description}
+              onChange={e =>
+                setReport(prev => ({ ...prev, description: e.target.value }))
+              }
+            />
+            <button type="submit" className="action-btn btn-primary">Submit Report</button>
+          </form>
+        </div>
 
-        <form className="card" onSubmit={submitFeedback}>
-          <h3>Send Feedback</h3>
+        <div className="card">
+          <h3>Recent Announcements</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            {updates.length === 0 ? (
+              <p style={{ color: '#94a3b8' }}>No announcements yet.</p>
+            ) : (
+              updates.map(item => (
+                <div key={item.id} style={{ 
+                  padding: '1rem', 
+                  background: 'rgba(255,255,255,0.05)', 
+                  borderRadius: '12px',
+                  borderLeft: '4px solid #3b82f6'
+                }}>
+                  <div style={{ fontWeight: '700', marginBottom: '0.25rem' }}>{item.title}</div>
+                  <div style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{item.content}</div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+                    By {item.politicianName}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '2rem' }}>
+        <h3>Your Submitted Issues</h3>
+        <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
+          {loading ? (
+            <p>Loading reports...</p>
+          ) : reports.length === 0 ? (
+            <p style={{ color: '#94a3b8' }}>You haven't submitted any issues yet.</p>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Response</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.map(r => {
+                  const latest = getLatestResponse(r.id)
+                  const status = latest?.status || 'open'
+                  return (
+                    <tr key={r.id}>
+                      <td style={{ fontWeight: '600' }}>{r.title}</td>
+                      <td>
+                        <span className={`badge ${status === 'resolved' ? 'badge-success' : 'badge-info'}`} style={{ 
+                          padding: '4px 10px', 
+                          fontSize: '0.75rem',
+                          borderRadius: '999px'
+                        }}>
+                          {status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.875rem' }}>
+                        {latest?.message ? (
+                          <div>
+                            <div style={{ color: '#cbd5e1' }}>{latest.message}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                              — {latest.politicianName}
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#64748b', fontStyle: 'italic' }}>Pending review</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '2rem', maxWidth: '600px' }}>
+        <h3>Send Direct Feedback</h3>
+        <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+          Your feedback helps us improve the platform and our services.
+        </p>
+        <form onSubmit={submitFeedback} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <input
             type="text"
             placeholder="Your name"
@@ -149,58 +261,16 @@ export default function Citizen() {
             }
           />
           <textarea
-            placeholder="Your feedback"
+            placeholder="Your thoughts, suggestions, or feedback..."
+            style={{ minHeight: '100px' }}
             value={feedback.message}
             onChange={e =>
               setFeedback(prev => ({ ...prev, message: e.target.value }))
             }
           />
-          <button type="submit">Submit Feedback</button>
+          <button type="submit" className="action-btn btn-success">Send Feedback</button>
         </form>
-
-        <div className="card">
-          <h3>Announcements</h3>
-          {updates.length === 0 ? (
-            <p>No announcements yet.</p>
-          ) : (
-            <ul>
-              {updates.map(item => (
-                <li key={item.id}>
-                  <strong>{item.title}</strong> — {item.content} <em>({item.politicianName})</em>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="card">
-          <h3>Your Submitted Issues</h3>
-          {loading ? (
-            <p>Loading...</p>
-          ) : reports.length === 0 ? (
-            <p>No issues submitted yet.</p>
-          ) : (
-            <ul>
-              {reports.map(r => {
-                const latest = getLatestResponse(r.id)
-                return (
-                  <li key={r.id}>
-                    <strong>{r.title}</strong> — {r.description} <em>({r.citizenName})</em>
-                    <br />
-                    <strong>Status:</strong> {latest?.status || 'open'}
-                    {latest?.message && (
-                      <>
-                        <br />
-                        <strong>Politician Review:</strong> {latest.message} <em>({latest.politicianName})</em>
-                      </>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
       </div>
-    </section>
+    </div>
   )
 }
