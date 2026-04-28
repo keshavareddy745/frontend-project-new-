@@ -3,10 +3,23 @@ import { updatePostInBackend, fetchPostsFromBackend, createPostInBackend } from 
 
 export default function PoliticianDashboard() {
   const [allPosts, setAllPosts] = useState([])
-  const activeReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && p.status !== 'resolved')
-  const resolvedReports = allPosts.filter(p => p.status === 'resolved')
+  const [recentlyResolved, setRecentlyResolved] = useState(new Set())
+  
+  const getSafeId = (item) => {
+    const id = item._id || item.id || '';
+    return id.toString().slice(-6) || 'N/A';
+  };
+
+  const isActuallyResolved = (p) => {
+    const id = String(p._id || p.id);
+    return p.status === 'resolved' || p.status === 'solved' || recentlyResolved.has(id);
+  };
+
+  const activeReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && !isActuallyResolved(p))
   const announcements = allPosts.filter(p => p.role === 'politician' && !p.isImportant)
-  const importantItems = allPosts.filter(p => p.isImportant && p.status !== 'resolved')
+  const importantItems = allPosts.filter(p => p.isImportant && !isActuallyResolved(p))
+  const pendingIssues = Array.isArray(allPosts) ? allPosts.filter(r => !isActuallyResolved(r) && (r.status === 'open' || r.status === 'reviewing')) : []
+  const solvedIssues = Array.isArray(allPosts) ? allPosts.filter(r => isActuallyResolved(r)) : []
   const [loading, setLoading] = useState(true)
 
   const [announcement, setAnnouncement] = useState({
@@ -21,11 +34,21 @@ export default function PoliticianDashboard() {
     status: 'reviewing'
   })
 
-  // ✅ FETCH DATA FROM BACKEND
   const fetchReports = async () => {
     try {
       const data = await fetchPostsFromBackend()
-      setAllPosts(Array.isArray(data) ? data : [])
+      if (Array.isArray(data)) {
+        // Filter out items that we just resolved locally to prevent them from "coming back"
+        // until the backend actually reflects the change.
+        const filteredData = data.map(item => {
+          const id = String(item._id || item.id);
+          if (recentlyResolved.has(id)) {
+            return { ...item, status: 'resolved' };
+          }
+          return item;
+        });
+        setAllPosts(filteredData)
+      }
     } catch (err) {
       console.error('Failed to fetch:', err)
     } finally {
@@ -35,19 +58,18 @@ export default function PoliticianDashboard() {
 
   useEffect(() => {
     fetchReports()
-    const interval = setInterval(fetchReports, 3000)
+    // Poll every 5 seconds
+    const interval = setInterval(fetchReports, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [recentlyResolved]) // Add recentlyResolved to dependencies to ensure fetch reflects local changes
 
-  // ✅ SAVE ANNOUNCEMENT TO DB
+
   async function submitAnnouncement(e) {
     e.preventDefault()
-
     if (!announcement.title || !announcement.content || !announcement.politicianName) {
       alert('Please fill all fields')
       return
     }
-
     try {
       await createPostInBackend({
         title: announcement.title,
@@ -55,8 +77,7 @@ export default function PoliticianDashboard() {
         citizenName: announcement.politicianName,
         role: 'politician'
       })
-
-      alert('Saved to DB ✅')
+      alert('Announcement published successfully ✅')
       setAnnouncement({ title: '', content: '', politicianName: '' })
       fetchReports()
     } catch (err) {
@@ -65,354 +86,327 @@ export default function PoliticianDashboard() {
     }
   }
 
-  // ✅ SUBMIT REVIEW FOR CITIZEN ISSUE
   async function submitReview(postId, forcedStatus = null) {
+    if (!postId) return
     const statusToSubmit = forcedStatus || reviewData.status
-    
     if (!reviewData.response && !forcedStatus) {
       alert('Please enter a response')
       return
     }
-
     try {
-      const postToUpdate = allPosts.find(p => (p._id || p.id) === postId)
+      const postToUpdate = allPosts.find(p => String(p._id || p.id) === String(postId))
       if (!postToUpdate) return
-
       const updatedPost = {
         ...postToUpdate,
         politicianResponse: reviewData.response || postToUpdate.politicianResponse || 'Issue marked as done.',
         status: statusToSubmit
       }
+      if (statusToSubmit === 'resolved' || statusToSubmit === 'solved') {
+        setRecentlyResolved(prev => new Set(prev).add(String(postId)))
+      }
 
-      // Optimistic Update: Update local state immediately for instant feedback
-      setAllPosts(prev => prev.map(p => (p._id || p.id) === postId ? updatedPost : p))
+      setAllPosts(prev => prev.map(p => String(p._id || p.id) === String(postId) ? updatedPost : p))
       setReviewData({ postId: null, response: '', status: 'reviewing' })
-
       await updatePostInBackend(postId, updatedPost)
-      
       alert(`Issue ${statusToSubmit === 'resolved' ? 'Resolved' : 'Updated'} successfully ✅`)
-      fetchReports() // Re-fetch to ensure sync with server
     } catch (err) {
       console.error('Failed to submit review:', err)
-      alert('Error submitting review')
-      fetchReports() // Rollback on error
+      fetchReports()
     }
   }
 
   return (
     <div className="dashboard-container">
-
-      <h2>Politician Dashboard</h2>
-
-      {/* 🔹 Important / Priority Items */}
-      <div className="card" style={{ border: '1px solid #f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
-        <h3 style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>⚠️</span> Important Priority Items
-        </h3>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-          These items have been flagged by moderators for your immediate attention.
-        </p>
-
-        {importantItems.length === 0 ? (
-          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No priority items at the moment.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {importantItems.map(item => (
-              <div key={item._id || item.id} style={{ 
-                padding: '1.25rem', 
-                background: 'rgba(15, 23, 42, 0.4)', 
-                borderRadius: '12px',
-                borderLeft: '4px solid #f59e0b'
+      <div className="dashboard-header" style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="dashboard-title">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '0.5rem' }}>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Emblem_of_Andhra_Pradesh.svg/1200px-Emblem_of_Andhra_Pradesh.svg.png" 
+              alt="AP Logo" 
+              style={{ height: '80px', filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.3))' }}
+            />
+            <div>
+              <h2 style={{ 
+                fontSize: '2.5rem', 
+                fontWeight: '900', 
+                margin: 0, 
+                letterSpacing: '-0.03em', 
+                background: 'linear-gradient(to right, var(--gov-blue-800), var(--gov-accent))', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent' 
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <span className="badge" style={{ 
-                    background: item.role === 'politician' ? '#10b981' : '#3b82f6',
-                    fontSize: '0.65rem',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {item.role === 'politician' ? 'POLITICIAN NEWS' : 'CITIZEN ISSUE'}
-                  </span>
+                Politician <span style={{ color: 'var(--gov-accent)' }}>Portal</span>
+              </h2>
+              <p style={{ color: 'var(--gov-text-secondary)', fontSize: '1.1rem', margin: 0, fontWeight: '500' }}>
+                Official Administrative Command Center • Government of Andhra Pradesh
+              </p>
+            </div>
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div className="badge badge-success" style={{ padding: '0.75rem 1.25rem', fontSize: '0.9rem', borderRadius: '12px' }}>
+            <span style={{ marginRight: '0.5rem' }}>●</span> Session Active
+          </div>
+        </div>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card" style={{ borderTop: '4px solid var(--gov-accent)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-label">Pending Issues</span>
+              <span className="stat-value">{activeReports.length}</span>
+            </div>
+            <span style={{ fontSize: '1.5rem' }}>📂</span>
+          </div>
+          <small style={{ color: 'var(--gov-text-secondary)', marginTop: '0.5rem' }}>Awaiting Official Review</small>
+        </div>
+        <div className="stat-card" style={{ borderTop: '4px solid var(--gov-warning)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-label">Priority Items</span>
+              <span className="stat-value" style={{ color: 'var(--gov-warning)' }}>{importantItems.length}</span>
+            </div>
+            <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+          </div>
+          <small style={{ color: 'var(--gov-text-secondary)', marginTop: '0.5rem' }}>Immediate Action Required</small>
+        </div>
+        <div className="stat-card" style={{ borderTop: '4px solid var(--gov-success)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <span className="stat-label">Announcements</span>
+              <span className="stat-value" style={{ color: 'var(--gov-success)' }}>{announcements.length}</span>
+            </div>
+            <span style={{ fontSize: '1.5rem' }}>📢</span>
+          </div>
+          <small style={{ color: 'var(--gov-text-secondary)', marginTop: '0.5rem' }}>Public Directives Active</small>
+        </div>
+      </div>
+
+      <div className="dashboard-grid">
+        {/* Left Column: Priority & Active Issues */}
+        <div className="col-span-8">
+          {/* Priority Items */}
+          <section className="mb-8">
+            <div className="card" style={{ borderLeft: '4px solid var(--gov-warning)', background: 'rgba(245, 158, 11, 0.02)' }}>
+              <div className="flex-between mb-8">
+                <div>
+                  <h3 style={{ margin: 0, color: 'var(--gov-warning)', fontSize: '1.5rem', fontWeight: '700' }}>⚠️ High-Priority Directives</h3>
+                  <p className="text-secondary" style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>Critical items requiring immediate administrative attention</p>
                 </div>
-                <h4 style={{ margin: '0 0 0.5rem 0', color: '#f8fafc' }}>{item.title}</h4>
-                <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.95rem' }}>{item.description}</p>
-                
-                {item.politicianResponse ? (
-                  <div style={{ 
-                    padding: '0.75rem', 
-                    background: 'rgba(59, 130, 246, 0.1)', 
-                    borderRadius: '8px',
-                    borderLeft: '3px solid #3b82f6',
-                    marginBottom: '1rem'
-                  }}>
-                    <div style={{ fontWeight: '700', color: '#3b82f6', fontSize: '0.7rem', marginBottom: '0.2rem' }}>YOUR RESPONSE:</div>
-                    <div style={{ color: '#f8fafc', fontSize: '0.85rem' }}>{item.politicianResponse}</div>
-                  </div>
-                ) : (
-                  <div style={{ marginBottom: '1rem' }}>
-                    {reviewData.postId === (item._id || item.id) ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <textarea
-                          placeholder="Write your response..."
-                          value={reviewData.response}
-                          onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
-                          style={{ minHeight: '80px', fontSize: '0.9rem' }}
-                        />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <select 
-                            value={reviewData.status}
-                            onChange={e => setReviewData(prev => ({ ...prev, status: e.target.value }))}
-                            style={{ padding: '0.4rem', borderRadius: '6px', background: '#1e293b', color: 'white', fontSize: '0.8rem' }}
-                          >
-                            <option value="reviewing">Under Review</option>
-                            <option value="resolved">Done / Resolved</option>
-                          </select>
-                          <button 
-                            className="action-btn btn-success" 
-                            style={{ flex: 1, padding: '0.4rem' }}
-                            onClick={() => submitReview(item._id || item.id)}
-                          >
-                            Update
-                          </button>
-                          <button 
-                            className="action-btn" 
-                            style={{ flex: 1, padding: '0.4rem', background: '#10b981', color: 'white' }}
-                            onClick={() => submitReview(item._id || item.id, 'resolved')}
-                          >
-                            Mark Done
-                          </button>
-                          <button 
-                            className="action-btn btn-secondary"
-                            style={{ padding: '0.4rem' }}
-                            onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}
-                          >
-                            Cancel
-                          </button>
+                <span className="badge badge-warning">Priority 1</span>
+              </div>
+              
+              {importantItems.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>
+                  <span style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }}>✅</span>
+                  <p className="text-secondary" style={{ fontStyle: 'italic', margin: 0 }}>All high-priority items have been cleared.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {importantItems.map(item => (
+                    <div key={item._id || item.id} className="card" style={{ 
+                      padding: '1.5rem', 
+                      background: 'rgba(245, 158, 11, 0.05)', 
+                      border: '1px solid rgba(245, 158, 11, 0.1)',
+                      boxShadow: 'none'
+                    }}>
+                      <div className="flex-between mb-4">
+                        <span className={`badge ${item.role === 'politician' ? 'badge-success' : 'badge-info'}`}>
+                          {item.role === 'politician' ? 'INTERNAL NEWS' : 'CITIZEN DIRECTIVE'}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <small className="text-secondary" style={{ fontWeight: '600' }}>Ref: #{getSafeId(item)}</small>
+                          <span style={{ color: 'var(--gov-warning)', fontWeight: '800' }}>!</span>
                         </div>
                       </div>
-                    ) : null}
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <small style={{ color: '#64748b' }}>By {item.citizenName}</small>
-                  {!item.politicianResponse && reviewData.postId !== (item._id || item.id) && (
-                    <button 
-                      className="action-btn btn-primary" 
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
-                      onClick={() => setReviewData({ postId: (item._id || item.id), response: '', status: 'reviewing' })}
-                    >
-                      Take Action
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 🔹 Announcement Form */}
-      <div className="card">
-        <h3>Post Announcement</h3>
-
-        <form onSubmit={submitAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          
-          <input
-            type="text"
-            placeholder="Your name"
-            value={announcement.politicianName}
-            onChange={e =>
-              setAnnouncement(prev => ({ ...prev, politicianName: e.target.value }))
-            }
-          />
-
-          <input
-            type="text"
-            placeholder="Announcement title"
-            value={announcement.title}
-            onChange={e =>
-              setAnnouncement(prev => ({ ...prev, title: e.target.value }))
-            }
-          />
-
-          <textarea
-            placeholder="Announcement content..."
-            value={announcement.content}
-            onChange={e =>
-              setAnnouncement(prev => ({ ...prev, content: e.target.value }))
-            }
-          />
-
-          <button type="submit">Post Announcement</button>
-        </form>
-      </div>
-
-      {/* 🔹 Announcements */}
-      <div className="card">
-        <h3>Your Announcements</h3>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-          Recent updates and news you've shared with the community.
-        </p>
-
-        {announcements.length === 0 ? (
-          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No announcements yet</p>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {announcements.map(item => (
-              <div key={item._id || item.id} style={{ 
-                padding: '1.25rem', 
-                background: 'rgba(255, 255, 255, 0.03)', 
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.05)'
-              }}>
-                <h4 style={{ margin: '0 0 0.5rem 0', color: '#f8fafc' }}>{item.title}</h4>
-                <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5' }}>{item.description}</p>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                  Posted by: <span style={{ color: '#94a3b8' }}>{item.citizenName}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 🔹 Citizen Issues */}
-      <div className="card">
-        <h3>Active Citizen Issues</h3>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-          Issues currently being reviewed or awaiting your attention.
-        </p>
-
-        {loading ? (
-          <p>Loading issues...</p>
-        ) : activeReports.length === 0 ? (
-          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No active issues reported</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {activeReports.map(report => (
-              <div key={report._id || report.id} style={{ 
-                padding: '1.5rem', 
-                background: 'rgba(255, 255, 255, 0.03)', 
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.05)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#f8fafc', fontSize: '1.1rem' }}>{report.title}</h4>
-                    <small style={{ color: '#64748b' }}>Submitted by: <span style={{ color: '#94a3b8' }}>{report.citizenName}</span></small>
-                  </div>
-                  <span className={`badge ${report.status === 'resolved' ? 'badge-success' : 'badge-info'}`}>
-                    {(report.status || 'open').toUpperCase()}
-                  </span>
-                </div>
-                
-                <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6' }}>{report.description}</p>
-
-                {report.politicianResponse ? (
-                  <div style={{ 
-                    padding: '1rem', 
-                    background: 'rgba(59, 130, 246, 0.1)', 
-                    borderRadius: '12px',
-                    borderLeft: '4px solid #3b82f6'
-                  }}>
-                    <div style={{ fontWeight: '700', color: '#3b82f6', fontSize: '0.8rem', marginBottom: '0.25rem' }}>YOUR RESPONSE:</div>
-                    <div style={{ color: '#f8fafc', fontSize: '0.9rem' }}>{report.politicianResponse}</div>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: '1rem' }}>
-                    {reviewData.postId === (report._id || report.id) ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <textarea
-                          placeholder="Write your response or plan of action..."
-                          value={reviewData.response}
-                          onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
-                          style={{ minHeight: '100px' }}
-                        />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <select 
-                            value={reviewData.status}
-                            onChange={e => setReviewData(prev => ({ ...prev, status: e.target.value }))}
-                            style={{ padding: '0.5rem', borderRadius: '8px', background: '#1e293b', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-                          >
-                            <option value="reviewing">Under Review</option>
-                            <option value="resolved">Done / Resolved</option>
-                          </select>
-                          <button 
-                            className="action-btn btn-success" 
-                            style={{ flex: 1 }}
-                            onClick={() => submitReview(report._id || report.id)}
-                          >
-                            Update Status
-                          </button>
-                          <button 
-                            className="action-btn" 
-                            style={{ flex: 1, background: '#10b981', color: 'white' }}
-                            onClick={() => submitReview(report._id || report.id, 'resolved')}
-                          >
-                            Mark Done
-                          </button>
-                          <button 
-                            className="action-btn btn-secondary"
-                            onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}
-                          >
-                            Cancel
-                          </button>
-                        </div>
+                      <h4 className="mb-3" style={{ fontSize: '1.2rem', fontWeight: '700' }}>{item.title}</h4>
+                      <p className="text-secondary mb-6" style={{ lineHeight: '1.6' }}>{item.description}</p>
+                      
+                      <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        {reviewData.postId === (item._id || item.id) ? (
+                          <div className="gap-4" style={{ display: 'flex', flexDirection: 'column' }}>
+                            <textarea
+                              placeholder="Draft formal administrative response..."
+                              style={{ minHeight: '100px', fontSize: '1rem' }}
+                              value={reviewData.response}
+                              onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
+                            />
+                            <div className="flex-between gap-3">
+                              <select 
+                                value={reviewData.status}
+                                onChange={e => setReviewData(prev => ({ ...prev, status: e.target.value }))}
+                                style={{ flex: 1 }}
+                              >
+                                <option value="reviewing">Under Official Review</option>
+                                <option value="resolved">Resolution Complete</option>
+                              </select>
+                              <button className="btn-primary" style={{ padding: '0.75rem 2rem' }} onClick={() => submitReview(item._id || item.id)}>Update Status</button>
+                              <button className="text-secondary" style={{ padding: '0 1rem' }} onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}>Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-between">
+                            <small className="text-secondary">Filed by: {item.citizenName || 'Government System'}</small>
+                            <button className="btn-primary" onClick={() => setReviewData({ postId: (item._id || item.id), response: '', status: 'reviewing' })}>
+                              Take Administrative Action
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <button 
-                        className="action-btn btn-primary"
-                        onClick={() => setReviewData({ postId: (report._id || report.id), response: '', status: 'reviewing' })}
-                      >
-                        Review & Respond
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 🔹 Resolved Issues */}
-      <div className="card" style={{ border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.05)' }}>
-        <h3 style={{ color: '#10b981' }}>Resolved Issues</h3>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-          Issues that have been completed and resolved.
-        </p>
-
-        {resolvedReports.length === 0 ? (
-          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No resolved issues yet.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {resolvedReports.map(report => (
-              <div key={report._id || report.id} style={{ 
-                padding: '1.25rem', 
-                background: 'rgba(15, 23, 42, 0.4)', 
-                borderRadius: '12px',
-                borderLeft: '4px solid #10b981'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: 0, color: '#f8fafc' }}>{report.title}</h4>
-                  <span className="badge badge-success">RESOLVED</span>
+                    </div>
+                  ))}
                 </div>
-                <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.9rem' }}>{report.description}</p>
-                <div style={{ 
-                  padding: '0.75rem', 
-                  background: 'rgba(16, 185, 129, 0.1)', 
-                  borderRadius: '8px',
-                  border: '1px solid rgba(16, 185, 129, 0.2)'
-                }}>
-                  <small style={{ color: '#10b981', fontWeight: 'bold' }}>FINAL RESPONSE:</small>
-                  <p style={{ margin: '0.25rem 0 0 0', color: '#f8fafc', fontSize: '0.85rem' }}>{report.politicianResponse}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
+          </section>
 
+          {/* Citizen Issues */}
+          <section>
+            <div className="card" style={{ borderLeft: '4px solid var(--gov-accent)' }}>
+              <div className="flex-between mb-8">
+                <div>
+                  <h3 style={{ margin: 0, color: 'var(--gov-accent)', fontSize: '1.5rem', fontWeight: '700' }}>📂 Administrative Queue</h3>
+                  <p className="text-secondary" style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>Standard issues filed by citizens for department review</p>
+                </div>
+                <div className="badge badge-info">{activeReports.length} Active Cases</div>
+              </div>
+
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '3rem' }}>
+                  <div className="spinner"></div>
+                  <p className="text-secondary mt-4">Synchronizing with central database...</p>
+                </div>
+              ) : activeReports.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', background: 'rgba(255,255,255,0.01)', borderRadius: '12px' }}>
+                  <p className="text-secondary" style={{ fontStyle: 'italic', margin: 0 }}>Queue is currently clear.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {activeReports.map(report => (
+                    <div key={report._id || report.id} className="card" style={{ 
+                      padding: '1.5rem', 
+                      background: 'rgba(255, 255, 255, 0.02)', 
+                      border: '1px solid var(--gov-border)',
+                      boxShadow: 'none'
+                    }}>
+                      <div className="flex-between mb-4">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <span style={{ fontSize: '1.2rem' }}>📄</span>
+                          <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>{report.title}</h4>
+                        </div>
+                        <span className={`badge ${report.status === 'resolved' ? 'badge-success' : 'badge-info'}`}>
+                          {report.status?.toUpperCase() || 'PENDING'}
+                        </span>
+                      </div>
+                      <p className="text-secondary mb-6" style={{ fontSize: '0.95rem' }}>{report.description}</p>
+                      
+                      <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        {reviewData.postId === (report._id || report.id) ? (
+                          <div className="gap-4" style={{ display: 'flex', flexDirection: 'column' }}>
+                            <textarea
+                              placeholder="Enter official findings and resolution details..."
+                              style={{ minHeight: '100px' }}
+                              value={reviewData.response}
+                              onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
+                            />
+                            <div className="flex gap-2">
+                              <button className="btn-primary" style={{ flex: 2 }} onClick={() => submitReview(report._id || report.id, 'resolved')}>Mark as Resolved</button>
+                              <button className="btn-secondary" style={{ flex: 1 }} onClick={() => submitReview(report._id || report.id)}>Save Draft</button>
+                              <button className="text-secondary" onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}>Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-between">
+                            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                              <small className="text-secondary">Filed by: <span style={{ color: 'var(--gov-text-primary)' }}>{report.citizenName}</span></small>
+                              <small className="text-secondary">Ref ID: <span style={{ color: 'var(--gov-text-primary)' }}>#{getSafeId(report)}</span></small>
+                            </div>
+                            <button className="btn-primary" onClick={() => setReviewData({ postId: (report._id || report.id), response: '', status: 'reviewing' })}>
+                              Process Case
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Right Column: Announcement Form & History */}
+        <div className="col-span-4">
+          {/* Post Announcement */}
+          <section className="mb-8">
+            <div className="card" style={{ borderTop: '4px solid var(--gov-accent)', position: 'sticky', top: '96px' }}>
+              <h3 className="mb-6" style={{ fontSize: '1.3rem', fontWeight: '700' }}>📢 Public Directive</h3>
+              <form onSubmit={submitAnnouncement} className="gap-5" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="gap-2" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label className="stat-label">Authorized Officer</label>
+                  <input
+                    type="text"
+                    placeholder="Enter full name"
+                    value={announcement.politicianName}
+                    onChange={e => setAnnouncement(prev => ({ ...prev, politicianName: e.target.value }))}
+                  />
+                </div>
+                <div className="gap-2" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label className="stat-label">Subject Title</label>
+                  <input
+                    type="text"
+                    placeholder="Headline of the directive"
+                    value={announcement.title}
+                    onChange={e => setAnnouncement(prev => ({ ...prev, title: e.target.value }))}
+                  />
+                </div>
+                <div className="gap-2" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label className="stat-label">Official Content</label>
+                  <textarea
+                    placeholder="Provide full details of the directive..."
+                    style={{ minHeight: '150px' }}
+                    value={announcement.content}
+                    onChange={e => setAnnouncement(prev => ({ ...prev, content: e.target.value }))}
+                  />
+                </div>
+                <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1rem' }}>Publish Directive</button>
+              </form>
+            </div>
+          </section>
+
+          {/* Announcement History */}
+          <section>
+            <div className="card">
+              <h3 className="mb-6" style={{ fontSize: '1.2rem', fontWeight: '700' }}>📜 Issued Directives</h3>
+              {announcements.length === 0 ? (
+                <p className="text-secondary" style={{ fontStyle: 'italic', textAlign: 'center' }}>No directives issued in current session.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {announcements.map(item => (
+                    <div key={item._id || item.id} style={{ 
+                      padding: '1.25rem', 
+                      background: 'rgba(59, 130, 246, 0.03)', 
+                      borderRadius: '12px',
+                      border: '1px solid var(--gov-border)'
+                    }}>
+                      <div className="flex-between mb-3">
+                        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>{item.title}</h4>
+                        <span className="badge badge-success">Active</span>
+                      </div>
+                      <p className="text-secondary" style={{ fontSize: '0.875rem', lineHeight: '1.5', marginBottom: '1rem' }}>{item.description}</p>
+                      <div className="flex-between">
+                        <small className="text-secondary">Ref: #{getSafeId(item)}</small>
+                        <small className="text-secondary" style={{ fontWeight: '600' }}>By: {item.citizenName}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   )
 }

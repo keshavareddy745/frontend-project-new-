@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
+import { Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom'
 import './App.css'
 import Home from './pages/Home.jsx'
 import Citizen from './pages/Citizen.jsx'
@@ -13,16 +13,20 @@ import { getCurrentRole, logout, getPendingUsers } from './store.js'
 function App() {
   const [role, setRole] = useState(() => getCurrentRole())
   const [pendingCount, setPendingCount] = useState(() => getPendingUsers().length)
+  const navigate = useNavigate()
 
   useEffect(() => {
     function sync() {
-      setRole(getCurrentRole())
+      const newRole = getCurrentRole()
+      setRole(newRole)
       setPendingCount(getPendingUsers().length)
     }
 
     window.addEventListener('storage', sync)
     window.addEventListener('fedf_role_change', sync)
     window.addEventListener('fedf_data_change', sync)
+
+    sync()
 
     return () => {
       window.removeEventListener('storage', sync)
@@ -31,12 +35,30 @@ function App() {
     }
   }, [])
 
+  const handleLogout = () => {
+    logout()
+    setRole(null)
+    navigate('/login')
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div id="app-root">
       <header className="site-header">
-        <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#f8fafc', letterSpacing: '-0.02em' }}>
-          CIVIC <span style={{ color: '#3b82f6' }}>CONNECT</span>
+        <div className="flex items-center gap-3">
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Emblem_of_Andhra_Pradesh.svg/1200px-Emblem_of_Andhra_Pradesh.svg.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }} />
+          <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f8fafc', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            CIVIC <span style={{ color: '#3b82f6' }}>CONNECT</span>
+            <div style={{ fontSize: '0.65rem', fontWeight: '600', color: '#94a3b8', letterSpacing: '0.05em', marginTop: '2px' }}>GOVERNMENT OF AP</div>
+          </div>
         </div>
+        
         <nav className="site-nav">
           {!role && (
             <>
@@ -46,17 +68,18 @@ function App() {
           )}
           <NavLink to="/" end>Home</NavLink>
         </nav>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+
+        <div className="flex items-center gap-4">
           {role ? (
             <>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#f8fafc' }}>{role}</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Logged in</div>
+              <div style={{ textAlign: 'right', display: 'none', md: 'block' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#f8fafc' }}>{role.toUpperCase()}</div>
+                <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>AUTHORIZED SESSION</div>
               </div>
               <button 
-                className="action-btn btn-danger"
-                style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
-                onClick={() => { logout(); window.location.href = '/' }}
+                className="btn-danger"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', borderRadius: '8px' }}
+                onClick={handleLogout}
               >
                 Logout
               </button>
@@ -68,19 +91,23 @@ function App() {
       <div className={role ? "dashboard-layout" : ""}>
         {role && (
           <aside className="sidebar">
+            <div className="mb-6 px-4">
+              <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Main Menu</div>
+            </div>
             <NavLink to={`/${role.toLowerCase()}`} className="sidebar-link">
-              <span>📊</span> Dashboard
+              <span>📊</span> Dashboard Overview
             </NavLink>
             {role === 'Admin' && (
               <NavLink to="/admin" className="sidebar-link">
-                <span>⚙️</span> Management
+                <span>⚙️</span> System Management
                 {pendingCount > 0 && (
                   <span style={{ 
                     background: '#ef4444', 
                     color: 'white', 
-                    borderRadius: '10px', 
-                    padding: '2px 8px', 
-                    fontSize: '0.7rem', 
+                    borderRadius: '6px', 
+                    padding: '2px 6px', 
+                    fontSize: '0.65rem', 
+                    fontWeight: '800',
                     marginLeft: 'auto' 
                   }}>
                     {pendingCount}
@@ -88,6 +115,11 @@ function App() {
                 )}
               </NavLink>
             )}
+            <div className="mt-auto px-4 py-4" style={{ borderTop: '1px solid var(--gov-border)' }}>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                &copy; 2026 AP Government<br/>Digital Services
+              </div>
+            </div>
           </aside>
         )}
 

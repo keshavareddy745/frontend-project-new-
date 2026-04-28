@@ -2,83 +2,118 @@ import { Link } from 'react-router-dom'
 
 export default function Home() {
   return (
-    <section style={{ 
-      minHeight: '80vh', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      justifyContent: 'center',
-      alignItems: 'center',
-      textAlign: 'center'
-    }}>
-      <div className="hero" style={{ 
-        maxWidth: '900px', 
-        width: '100%',
-        background: 'rgba(15, 23, 42, 0.6)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-      }}>
-        <h1 style={{ 
-          fontSize: '4.5rem', 
-          fontWeight: '900', 
-          marginBottom: '1.5rem',
-          color: '#f8fafc',
-          textShadow: '0 10px 30px rgba(0,0,0,0.5)',
-          letterSpacing: '-0.03em',
-          lineHeight: '1'
-        }}>
-          WELCOME TO <br/>
-          <span style={{ color: '#3b82f6' }}>CIVIC CONNECT</span>
-        </h1>
-        <p style={{ 
-          fontSize: '1.25rem', 
-          color: '#cbd5e1', 
-          marginBottom: '2.5rem',
-          maxWidth: '700px',
-          margin: '0 auto 2.5rem auto',
-          lineHeight: '1.6'
-        }}>
-          Bridging the gap between citizens and their representatives. 
-          A professional platform for transparent governance, 
-          direct communication, and community progress.
-        </p>
-        <Link to="/login" className="action-btn btn-primary" style={{ 
-          padding: '1rem 3rem', 
-          fontSize: '1.125rem',
-          textDecoration: 'none',
-          display: 'inline-block',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-          color: 'white',
-          fontWeight: '700',
-          boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)'
-        }}>
-          Get Started / Login
-        </Link>
+    <div className="flex-column items-center w-full" style={{ padding: '4rem 0' }}>
+      <div className="viz-container" style={{ marginBottom: '4rem' }}>
+        <div className="citizen-group">
+          <div className="person">👨‍👩‍👧‍👦 <span className="phone-icon">📱</span></div>
+          <div className="person">👨‍💻 <span className="phone-icon">📱</span></div>
+          <div className="person">👩‍💼 <span className="phone-icon">📱</span></div>
+        </div>
+
+        <div className="signal-path">
+          <div className="signal-wave"></div>
+          <div className="signal-dot"></div>
+          <div className="signal-dot" style={{ animationDelay: '0.6s' }}></div>
+          <div className="signal-dot" style={{ animationDelay: '1.2s' }}></div>
+        </div>
+
+        <div className="politician-viz">
+          <span>🏛️</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--gov-accent)' }}>POLITICIAN</span>
+          <span className="phone-icon" style={{ fontSize: '2rem' }}>📱</span>
+        </div>
+
+        <div className="viz-label">Empowering Direct Democracy</div>
       </div>
 
-      <div className="grid section" style={{ marginTop: '4rem', width: '100%', maxWidth: '1200px' }}>
-        <div className="card role-card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚖️</div>
-          <strong style={{ fontSize: '1.25rem', color: '#f8fafc' }}>Admin</strong>
-          <span style={{ color: '#94a3b8' }}>Oversee operations, manage user roles, and ensure platform integrity.</span>
-        </div>
-        <div className="card role-card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📢</div>
-          <strong style={{ fontSize: '1.25rem', color: '#f8fafc' }}>Citizen</strong>
-          <span style={{ color: '#94a3b8' }}>Report community issues, track progress, and engage with leaders.</span>
-        </div>
-        <div className="card role-card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🏛️</div>
-          <strong style={{ fontSize: '1.25rem', color: '#f8fafc' }}>Politician</strong>
-          <span style={{ color: '#94a3b8' }}>Respond to concerns, post official updates, and drive community growth.</span>
-        </div>
-        <div className="card role-card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🛡️</div>
-          <strong style={{ fontSize: '1.25rem', color: '#f8fafc' }}>Moderator</strong>
-          <span style={{ color: '#94a3b8' }}>Ensure respectful communication and maintain platform standards.</span>
+      <div className="card" style={{ 
+        maxWidth: '1000px', 
+        width: '100%', 
+        padding: '5rem 3rem',
+        textAlign: 'center',
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid var(--gov-border)',
+        boxShadow: 'var(--shadow-xl)'
+      }}>
+        <div style={{ 
+          width: '80px', 
+          height: '80px', 
+          margin: '0 auto 2rem',
+          backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Emblem_of_Andhra_Pradesh.svg/1200px-Emblem_of_Andhra_Pradesh.svg.png')",
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center'
+        }} />
+        
+        <h1 style={{ 
+          fontSize: '4.5rem', 
+          marginBottom: '1.5rem',
+          lineHeight: '1.1',
+          fontWeight: '900',
+          background: 'linear-gradient(to right, var(--gov-blue-800), var(--gov-accent))', 
+          WebkitBackgroundClip: 'text', 
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '-0.03em'
+        }}>
+          CIVIC <span style={{ color: 'var(--gov-accent)', WebkitTextFillColor: 'var(--gov-accent)' }}>CONNECT</span>
+        </h1>
+        
+        <p style={{ 
+          fontSize: '1.35rem', 
+          maxWidth: '750px', 
+          margin: '0 auto 3rem',
+          lineHeight: '1.6',
+          color: 'var(--gov-text-secondary)',
+          fontWeight: '500'
+        }}>
+          The official digital bridge for the citizens of Andhra Pradesh. 
+          Empowering community engagement through transparent communication, 
+          direct reporting, and professional governance oversight.
+        </p>
+
+        <div className="flex justify-center gap-6">
+          <Link to="/login" className="btn-primary" style={{ padding: '1.25rem 4rem', fontSize: '1.2rem', textDecoration: 'none', borderRadius: '15px' }}>
+            Access Portal
+          </Link>
+          <Link to="/register" className="action-btn" style={{ 
+            padding: '1.25rem 4rem', 
+            fontSize: '1.2rem', 
+            textDecoration: 'none',
+            border: '2px solid var(--gov-accent)',
+            color: 'var(--gov-accent)',
+            background: 'transparent',
+            borderRadius: '15px',
+            fontWeight: '700'
+          }}>
+            Request Account
+          </Link>
         </div>
       </div>
-    </section>
+
+      <div className="dashboard-grid w-full" style={{ maxWidth: '1200px', marginTop: '4rem' }}>
+        <div className="card col-span-4" style={{ padding: '2.5rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>🏛️</div>
+          <h3>Public Service</h3>
+          <p className="text-secondary">Dedicated tools for citizens to voice concerns and track regional developments directly.</p>
+        </div>
+        <div className="card col-span-4" style={{ padding: '2.5rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>📊</div>
+          <h3>Policy Insights</h3>
+          <p className="text-secondary">Official updates and directives from representatives regarding local and state initiatives.</p>
+        </div>
+        <div className="card col-span-4" style={{ padding: '2.5rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>🛡️</div>
+          <h3>Governance</h3>
+          <p className="text-secondary">Secure administrative oversight to ensure platform integrity and verify official communications.</p>
+        </div>
+      </div>
+      
+      <div style={{ marginTop: '6rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--gov-text-secondary)', fontSize: '0.85rem', letterSpacing: '0.1em', fontWeight: '700' }}>
+          OFFICIAL PORTAL OF THE GOVERNMENT OF ANDHRA PRADESH
+        </p>
+      </div>
+    </div>
   )
 }

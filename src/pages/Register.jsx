@@ -21,58 +21,67 @@ export default function Register() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <div style={{ 
-        background: 'rgba(255, 255, 255, 0.95)', 
-        backdropFilter: 'blur(20px)',
-        borderRadius: '24px', 
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', 
-        padding: '40px', 
-        maxWidth: '400px', 
-        width: '100%', 
-        textAlign: 'center',
-        border: '1px solid rgba(255, 255, 255, 0.3)'
-      }}>
-        <h2 style={{ marginBottom: '30px', color: '#333' }}>Register New Account</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-            Email
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div style={{ 
+            width: '60px', 
+            height: '60px', 
+            margin: '0 auto 1.5rem',
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Emblem_of_Andhra_Pradesh.svg/1200px-Emblem_of_Andhra_Pradesh.svg.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }} />
+          <h1>Account Request</h1>
+          <p>Government Service Portal Registration</p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="flex-column gap-2">
+            <label className="stat-label">Official Email</label>
             <input
               type="email"
               value={email}
-              placeholder="you@example.com"
+              placeholder="official.name@ap.gov.in"
               onChange={e => setEmail(e.target.value)}
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', marginTop: '5px', boxSizing: 'border-box' }}
+              required
             />
-          </label>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-            Password
+          </div>
+
+          <div className="flex-column gap-2">
+            <label className="stat-label">Create Password</label>
             <input
               type="password"
               value={password}
               placeholder="••••••••"
               onChange={e => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', marginTop: '5px', boxSizing: 'border-box' }}
+              required
             />
-          </label>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#555' }}>
-            Role
+          </div>
+
+          <div className="flex-column gap-2">
+            <label className="stat-label">Requested Designation</label>
             <select
               value={role}
               onChange={e => setRole(e.target.value)}
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', marginTop: '5px', boxSizing: 'border-box' }}
             >
               <option>Citizen</option>
               <option>Politician</option>
               <option>Moderator</option>
             </select>
-          </label>
-          <button type="submit" style={{ background: 'linear-gradient(to right, #2196F3, #42A5F5)', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold' }}>
-            Register
+          </div>
+
+          <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem' }}>
+            Submit Registration Request
           </button>
         </form>
-        <div style={{ marginTop: '20px', fontSize: '0.9em', color: '#555' }}>
-          Already have an account? <a href="/" style={{ color: '#2196F3', fontWeight: 'bold', textDecoration: 'none' }}>Login</a>
+
+        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--gov-text-secondary)' }}>
+          Already registered?{' '}
+          <a href="/" style={{ color: 'var(--gov-accent)', fontWeight: '700', textDecoration: 'none' }}>
+            Return to Login
+          </a>
         </div>
       </div>
     </div>

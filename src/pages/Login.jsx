@@ -57,168 +57,132 @@ export default function Login() {
 
     setCurrentRole(role)
     setCurrentUser({ email: foundUser.name })
-    navigate('/dashboard')
+    
+    // Direct navigation based on role to avoid sync delay in parent
+    setTimeout(() => {
+      navigate(`/${role.toLowerCase()}`)
+    }, 10)
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: 'transparent'
-    }}>
+    <div className="auth-page" style={{ flexDirection: 'column', gap: '2rem' }}>
+      <div className="viz-container">
+        <div className="citizen-group">
+          <div className="person">👨‍👩‍👧‍👦 <span className="phone-icon">📱</span></div>
+          <div className="person">👨‍💻 <span className="phone-icon">📱</span></div>
+          <div className="person">👩‍💼 <span className="phone-icon">📱</span></div>
+        </div>
 
-      {/* MAIN CARD */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        maxWidth: '480px',
-        borderRadius: '24px',
-        overflow: 'hidden',
-        backdropFilter: 'blur(20px)',
-        background: 'rgba(255, 255, 255, 0.95)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        padding: '40px'
-      }}>
+        <div className="signal-path">
+          <div className="signal-wave"></div>
+          <div className="signal-dot"></div>
+          <div className="signal-dot" style={{ animationDelay: '0.6s' }}></div>
+          <div className="signal-dot" style={{ animationDelay: '1.2s' }}></div>
+        </div>
 
-        <h1 style={{
-          textAlign: 'center',
-          color: '#1e3a8a', // Dark blue for title
-          fontWeight: '900',
-          marginBottom: '10px',
-          fontSize: '1.8em',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-          lineHeight: '1.2'
-        }}>
-          INTERACTION BETWEEN <br />
-          POLITICIANS AND CITIZENS
-        </h1>
-        <p style={{
-          textAlign: 'center',
-          color: '#64748b',
-          marginBottom: '30px',
-          fontSize: '1.1em',
-          fontWeight: '500'
-        }}>
-          Portal Login
-        </p>
+        <div className="politician-viz">
+          <span>🏛️</span>
+          <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--gov-accent)' }}>POLITICIAN</span>
+          <span className="phone-icon" style={{ fontSize: '2rem' }}>📱</span>
+        </div>
 
-        <form onSubmit={submit} style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px'
-        }}>
+        <div className="viz-label">Direct Citizen-to-Government Link</div>
+      </div>
 
-          <input
-            placeholder="Username"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={inputStyle}
-          />
+      <div className="auth-card">
+        <div className="auth-header">
+          <div style={{ 
+            width: '60px', 
+            height: '60px', 
+            margin: '0 auto 1.5rem',
+            backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Emblem_of_Andhra_Pradesh.svg/1200px-Emblem_of_Andhra_Pradesh.svg.png')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center'
+          }} />
+          <h1 style={{ 
+            fontSize: '2.2rem', 
+            fontWeight: '900', 
+            margin: '0 0 0.25rem', 
+            background: 'linear-gradient(to right, var(--gov-blue-800), var(--gov-accent))', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '-0.02em'
+          }}>Civic Connect</h1>
+          <p style={{ color: 'var(--gov-text-secondary)', fontWeight: '600', fontSize: '1rem', margin: 0 }}>
+            Government of Andhra Pradesh
+          </p>
+        </div>
 
-          <select
-            value={role}
-            onChange={e => setRole(e.target.value)}
-            style={inputStyle}
-          >
-            <option>Citizen</option>
-            <option>Politician</option>
-            <option>Moderator</option>
-            <option>Admin</option>
-          </select>
-
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={inputStyle}
-          />
-
-          {/* CAPTCHA */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <span style={{
-              flex: 1,
-              fontFamily: 'monospace',
-              fontSize: 22,
-              fontWeight: 'bold',
-              background: '#f8fafc',
-              color: '#ef4444',
-              padding: '8px 12px',
-              border: '1px solid #e2e8f0',
-              letterSpacing: 4,
-              borderRadius: '8px',
-              userSelect: 'none',
-              textDecoration: 'line-through',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {captchaText}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setCaptchaText(generateCaptcha())}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                background: '#f1f5f9',
-                color: '#475569',
-                cursor: 'pointer',
-                fontWeight: '600',
-                transition: 'background 0.2s'
-              }}
-            >
-              Refresh
-            </button>
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="flex-column gap-2">
+            <label className="stat-label">Identification</label>
+            <input
+              placeholder="Username or Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="username"
+            />
           </div>
 
-          <input
-            placeholder="Enter Captcha"
-            value={captchaInput}
-            onChange={e => setCaptchaInput(e.target.value)}
-            style={inputStyle}
-          />
+          <div className="flex-column gap-2">
+            <label className="stat-label">System Access Level</label>
+            <select
+              value={role}
+              onChange={e => setRole(e.target.value)}
+            >
+              <option>Citizen</option>
+              <option>Politician</option>
+              <option>Moderator</option>
+              <option>Admin</option>
+            </select>
+          </div>
 
-          <button style={{
-            padding: '14px',
-            borderRadius: '10px',
-            border: 'none',
-            background: 'linear-gradient(to right, #3b82f6, #2563eb)',
-            color: '#fff',
-            fontWeight: 'bold',
-            fontSize: '1.1em',
-            cursor: 'pointer',
-            marginTop: '10px',
-            boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
-          }}>
-            LOGIN →
+          <div className="flex-column gap-2">
+            <label className="stat-label">Secure Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+
+          <div className="flex-column gap-2">
+            <label className="stat-label">Verification Challenge</label>
+            <div className="captcha-container">
+              <div className="captcha-box">
+                {captchaText}
+              </div>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={() => setCaptchaText(generateCaptcha())}
+                style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--gov-text-secondary)' }}
+              >
+                ↻
+              </button>
+            </div>
+            <input
+              placeholder="Enter digits above"
+              value={captchaInput}
+              onChange={e => setCaptchaInput(e.target.value)}
+            />
+          </div>
+
+          <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '1rem' }}>
+            Authorize & Sign In
           </button>
 
-          <p style={{ textAlign: 'center', color: '#64748b', marginTop: '10px' }}>
-            Don’t have an account?{' '}
-            <Link to="/register" style={{ color: '#2563eb', fontWeight: 'bold' }}>
-              Sign Up
+          <p style={{ textAlign: 'center', color: 'var(--gov-text-secondary)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            New official?{' '}
+            <Link to="/register" style={{ color: 'var(--gov-accent)', fontWeight: '700', textDecoration: 'none' }}>
+              Request Access
             </Link>
           </p>
-
         </form>
       </div>
     </div>
   )
-}
-
-/* INPUT STYLE */
-const inputStyle = {
-  padding: '12px',
-  borderRadius: '8px',
-  border: '1px solid rgba(0,0,0,0.1)',
-  background: 'rgba(255,255,255,0.9)',
-  color: '#333',
-  outline: 'none'
 }
