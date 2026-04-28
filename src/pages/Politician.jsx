@@ -3,9 +3,9 @@ import { updatePostInBackend, fetchPostsFromBackend, createPostInBackend } from 
 
 export default function PoliticianDashboard() {
   const [allPosts, setAllPosts] = useState([])
-  const reports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant)
+  const reports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && p.status !== 'resolved')
   const announcements = allPosts.filter(p => p.role === 'politician' && !p.isImportant)
-  const importantItems = allPosts.filter(p => p.isImportant)
+  const importantItems = allPosts.filter(p => p.isImportant && p.status !== 'resolved')
   const [loading, setLoading] = useState(true)
 
   const [announcement, setAnnouncement] = useState({
