@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { updatePostInBackend, fetchPostsFromBackend, createPostInBackend } from '../store'
 
 export default function PoliticianDashboard() {
   const [allPosts, setAllPosts] = useState([])
@@ -22,8 +23,7 @@ export default function PoliticianDashboard() {
   // ✅ FETCH DATA FROM BACKEND
   const fetchReports = async () => {
     try {
-      const res = await fetch('https://backendproject-6-0sai.onrender.com/api/posts')
-      const data = await res.json()
+      const data = await fetchPostsFromBackend()
       setAllPosts(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error('Failed to fetch:', err)
@@ -48,24 +48,19 @@ export default function PoliticianDashboard() {
     }
 
     try {
-      const res = await fetch('https://backendproject-6-0sai.onrender.com/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: announcement.title,
-          description: announcement.content,
-          citizenName: announcement.politicianName,
-          role: 'politician'
-        })
+      await createPostInBackend({
+        title: announcement.title,
+        description: announcement.content,
+        citizenName: announcement.politicianName,
+        role: 'politician'
       })
 
-      if (res.ok) {
-        alert('Saved to DB ✅')
-        setAnnouncement({ title: '', content: '', politicianName: '' })
-        fetchReports()
-      }
+      alert('Saved to DB ✅')
+      setAnnouncement({ title: '', content: '', politicianName: '' })
+      fetchReports()
     } catch (err) {
       console.error(err)
+      alert('Error saving announcement')
     }
   }
 
@@ -80,21 +75,17 @@ export default function PoliticianDashboard() {
       const postToUpdate = allPosts.find(p => (p._id || p.id) === postId)
       if (!postToUpdate) return
 
-      const res = await fetch(`https://backendproject-6-0sai.onrender.com/api/posts/${postId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...postToUpdate,
-          politicianResponse: reviewData.response,
-          status: reviewData.status
-        })
-      })
-
-      if (res.ok) {
-        alert('Review submitted successfully ✅')
-        setReviewData({ postId: null, response: '', status: 'reviewing' })
-        fetchReports()
+      const updatedPost = {
+        ...postToUpdate,
+        politicianResponse: reviewData.response,
+        status: reviewData.status
       }
+
+      await updatePostInBackend(postId, updatedPost)
+      
+      alert('Review submitted successfully ✅')
+      setReviewData({ postId: null, response: '', status: 'reviewing' })
+      fetchReports()
     } catch (err) {
       console.error('Failed to submit review:', err)
       alert('Error submitting review')
@@ -137,11 +128,68 @@ export default function PoliticianDashboard() {
                 </div>
                 <h4 style={{ margin: '0 0 0.5rem 0', color: '#f8fafc' }}>{item.title}</h4>
                 <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.95rem' }}>{item.description}</p>
+                
+                {item.politicianResponse ? (
+                  <div style={{ 
+                    padding: '0.75rem', 
+                    background: 'rgba(59, 130, 246, 0.1)', 
+                    borderRadius: '8px',
+                    borderLeft: '3px solid #3b82f6',
+                    marginBottom: '1rem'
+                  }}>
+                    <div style={{ fontWeight: '700', color: '#3b82f6', fontSize: '0.7rem', marginBottom: '0.2rem' }}>YOUR RESPONSE:</div>
+                    <div style={{ color: '#f8fafc', fontSize: '0.85rem' }}>{item.politicianResponse}</div>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '1rem' }}>
+                    {reviewData.postId === (item._id || item.id) ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <textarea
+                          placeholder="Write your response..."
+                          value={reviewData.response}
+                          onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
+                          style={{ minHeight: '80px', fontSize: '0.9rem' }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <select 
+                            value={reviewData.status}
+                            onChange={e => setReviewData(prev => ({ ...prev, status: e.target.value }))}
+                            style={{ padding: '0.4rem', borderRadius: '6px', background: '#1e293b', color: 'white', fontSize: '0.8rem' }}
+                          >
+                            <option value="reviewing">Under Review</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                          <button 
+                            className="action-btn btn-success" 
+                            style={{ flex: 1, padding: '0.4rem' }}
+                            onClick={() => submitReview(item._id || item.id)}
+                          >
+                            Submit
+                          </button>
+                          <button 
+                            className="action-btn btn-secondary"
+                            style={{ padding: '0.4rem' }}
+                            onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <small style={{ color: '#64748b' }}>By {item.citizenName}</small>
-                  <button className="action-btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
-                    Take Action
-                  </button>
+                  {!item.politicianResponse && reviewData.postId !== (item._id || item.id) && (
+                    <button 
+                      className="action-btn btn-primary" 
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
+                      onClick={() => setReviewData({ postId: (item._id || item.id), response: '', status: 'reviewing' })}
+                    >
+                      Take Action
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
