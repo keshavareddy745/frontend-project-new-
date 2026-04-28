@@ -193,59 +193,6 @@ export default function Citizen() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: '2rem' }}>
-        <h3>Your Submitted Issues</h3>
-        <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
-          {loading ? (
-            <p>Loading reports...</p>
-          ) : reports.length === 0 ? (
-            <p style={{ color: '#94a3b8' }}>You haven't submitted any issues yet.</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Response</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reports.map(r => {
-                  const latest = getLatestResponse(r.id)
-                  const status = latest?.status || 'open'
-                  return (
-                    <tr key={r.id}>
-                      <td style={{ fontWeight: '600' }}>{r.title}</td>
-                      <td>
-                        <span className={`badge ${status === 'resolved' ? 'badge-success' : 'badge-info'}`} style={{ 
-                          padding: '4px 10px', 
-                          fontSize: '0.75rem',
-                          borderRadius: '999px'
-                        }}>
-                          {status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: '0.875rem' }}>
-                        {latest?.message ? (
-                          <div>
-                            <div style={{ color: '#cbd5e1' }}>{latest.message}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                              — {latest.politicianName}
-                            </div>
-                          </div>
-                        ) : (
-                          <span style={{ color: '#64748b', fontStyle: 'italic' }}>Pending review</span>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
       <div className="card" style={{ marginTop: '2rem', maxWidth: '600px' }}>
         <h3>Send Direct Feedback</h3>
         <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
