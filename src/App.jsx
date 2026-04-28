@@ -43,6 +43,20 @@ function App() {
 
   return (
     <div id="app-root">
+      {/* Background Gold Flash Effects */}
+      <div className="thunder-flash">
+        <div className="lightning"></div>
+        <div className="lightning"></div>
+        <div className="lightning"></div>
+      </div>
+
+      {/* Right Corner Image */}
+      <img 
+        src="https://tse3.mm.bing.net/th/id/OIP.M_kLdRU2PZ3y-4dGIa_KTgHaEK?pid=Api&h=220&P=0" 
+        alt="Decorative Element" 
+        className="corner-image"
+      />
+
       <header className="site-header">
         <div className="flex items-center gap-3">
           <div style={{ 
@@ -53,28 +67,28 @@ function App() {
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center'
           }} />
-          <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#f8fafc', letterSpacing: '-0.02em', lineHeight: 1 }}>
-            CIVIC <span style={{ color: '#3b82f6' }}>CONNECT</span>
-            <div style={{ fontSize: '0.65rem', fontWeight: '600', color: '#94a3b8', letterSpacing: '0.05em', marginTop: '2px' }}>GOVERNMENT OF AP</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            CIVIC <span style={{ color: 'var(--gold-accent)' }}>CONNECT</span>
+            <div style={{ fontSize: '0.65rem', fontWeight: '600', color: '#475569', letterSpacing: '0.05em', marginTop: '2px' }}>GOVERNMENT OF AP</div>
           </div>
         </div>
         
         <nav className="site-nav">
           {!role && (
             <>
-              <NavLink to="/login">Login</NavLink>
-              <NavLink to="/register">Register</NavLink>
+              <NavLink to="/login" style={({isActive}) => isActive ? {color: 'var(--gold-accent)', background: 'rgba(218, 165, 32, 0.1)'} : {}}>Login</NavLink>
+              <NavLink to="/register" style={({isActive}) => isActive ? {color: 'var(--gold-accent)', background: 'rgba(218, 165, 32, 0.1)'} : {}}>Register</NavLink>
             </>
           )}
-          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/" end style={({isActive}) => isActive ? {color: 'var(--gold-accent)', background: 'rgba(218, 165, 32, 0.1)'} : {}}>Home</NavLink>
         </nav>
 
         <div className="flex items-center gap-4">
           {role ? (
             <>
               <div style={{ textAlign: 'right', display: 'none', md: 'block' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#f8fafc' }}>{role.toUpperCase()}</div>
-                <div style={{ fontSize: '0.65rem', color: '#94a3b8' }}>AUTHORIZED SESSION</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#1e293b' }}>{role.toUpperCase()}</div>
+                <div style={{ fontSize: '0.65rem', color: '#475569' }}>AUTHORIZED SESSION</div>
               </div>
               <button 
                 className="btn-danger"

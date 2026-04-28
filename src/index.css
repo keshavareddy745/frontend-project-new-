@@ -30,6 +30,9 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --gov-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  --gold-primary: #FFD700;
+  --gold-accent: #DAA520;
+  --gold-glow: rgba(255, 215, 0, 0.4);
 }
 
 * {
@@ -77,6 +80,72 @@ body::before {
   height: 100%;
   background: rgba(241, 245, 249, 0.92);
   z-index: -1;
+}
+
+/* Gold Flash and Thunderstorm Effects */
+.thunder-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.lightning {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, var(--gold-glow) 0%, transparent 70%);
+  opacity: 0;
+  animation: goldLightning 8s infinite;
+}
+
+.lightning:nth-child(2) {
+  animation-delay: 3s;
+  background: radial-gradient(circle at 20% 30%, var(--gold-glow) 0%, transparent 60%);
+}
+
+.lightning:nth-child(3) {
+  animation-delay: 5.5s;
+  background: radial-gradient(circle at 80% 70%, var(--gold-glow) 0%, transparent 60%);
+}
+
+@keyframes goldLightning {
+  0%, 10%, 12%, 100% { opacity: 0; }
+  11% { opacity: 0.6; background: var(--gold-primary); }
+  11.5% { opacity: 0.2; }
+  11.7% { opacity: 0.8; background: var(--gold-primary); }
+}
+
+/* Right Corner Image */
+.corner-image {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 280px;
+  height: auto;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 20px var(--gold-glow);
+  border: 2px solid var(--gold-accent);
+  z-index: 1000;
+  animation: float 4s ease-in-out infinite;
+  background: white;
+  padding: 5px;
+}
+
+/* Gold Accents for UI */
+.gold-text {
+  color: var(--gold-accent);
+  text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.gold-border {
+  border: 2px solid var(--gold-accent) !important;
+  box-shadow: 0 0 15px var(--gold-glow) !important;
 }
 
 /* Professional Animations */
