@@ -4,7 +4,7 @@ import { updatePostInBackend, fetchPostsFromBackend, createPostInBackend } from 
 export default function PoliticianDashboard() {
   const [allPosts, setAllPosts] = useState([])
   const activeReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && p.status !== 'resolved')
-  const resolvedReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && p.status === 'resolved')
+  const resolvedReports = allPosts.filter(p => p.status === 'resolved')
   const announcements = allPosts.filter(p => p.role === 'politician' && !p.isImportant)
   const importantItems = allPosts.filter(p => p.isImportant && p.status !== 'resolved')
   const [loading, setLoading] = useState(true)
@@ -66,8 +66,10 @@ export default function PoliticianDashboard() {
   }
 
   // ✅ SUBMIT REVIEW FOR CITIZEN ISSUE
-  async function submitReview(postId) {
-    if (!reviewData.response) {
+  async function submitReview(postId, forcedStatus = null) {
+    const statusToSubmit = forcedStatus || reviewData.status
+    
+    if (!reviewData.response && !forcedStatus) {
       alert('Please enter a response')
       return
     }
@@ -78,18 +80,22 @@ export default function PoliticianDashboard() {
 
       const updatedPost = {
         ...postToUpdate,
-        politicianResponse: reviewData.response,
-        status: reviewData.status
+        politicianResponse: reviewData.response || postToUpdate.politicianResponse || 'Issue marked as done.',
+        status: statusToSubmit
       }
+
+      // Optimistic Update: Update local state immediately for instant feedback
+      setAllPosts(prev => prev.map(p => (p._id || p.id) === postId ? updatedPost : p))
+      setReviewData({ postId: null, response: '', status: 'reviewing' })
 
       await updatePostInBackend(postId, updatedPost)
       
-      alert('Review submitted successfully ✅')
-      setReviewData({ postId: null, response: '', status: 'reviewing' })
-      fetchReports()
+      alert(`Issue ${statusToSubmit === 'resolved' ? 'Resolved' : 'Updated'} successfully ✅`)
+      fetchReports() // Re-fetch to ensure sync with server
     } catch (err) {
       console.error('Failed to submit review:', err)
       alert('Error submitting review')
+      fetchReports() // Rollback on error
     }
   }
 
@@ -165,7 +171,14 @@ export default function PoliticianDashboard() {
                             style={{ flex: 1, padding: '0.4rem' }}
                             onClick={() => submitReview(item._id || item.id)}
                           >
-                            Submit
+                            Update
+                          </button>
+                          <button 
+                            className="action-btn" 
+                            style={{ flex: 1, padding: '0.4rem', background: '#10b981', color: 'white' }}
+                            onClick={() => submitReview(item._id || item.id, 'resolved')}
+                          >
+                            Mark Done
                           </button>
                           <button 
                             className="action-btn btn-secondary"
@@ -329,7 +342,14 @@ export default function PoliticianDashboard() {
                             style={{ flex: 1 }}
                             onClick={() => submitReview(report._id || report.id)}
                           >
-                            Submit Response
+                            Update Status
+                          </button>
+                          <button 
+                            className="action-btn" 
+                            style={{ flex: 1, background: '#10b981', color: 'white' }}
+                            onClick={() => submitReview(report._id || report.id, 'resolved')}
+                          >
+                            Mark Done
                           </button>
                           <button 
                             className="action-btn btn-secondary"
