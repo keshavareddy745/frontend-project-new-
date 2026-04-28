@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchPostsFromBackend, updatePostInBackend, getFeedback, getFlags, addFlag } from '../store.js'
+import { fetchPostsFromBackend, updatePostInBackend, getFeedback, getFlags, addFlag, deletePostInBackend } from '../store.js'
 
 export default function Moderator() {
   const [reason, setReason] = useState('')
@@ -53,6 +53,32 @@ export default function Moderator() {
     addFlag({ type, refId: id, reason })
     setReason('')
     alert('Content flagged for administrative review ✅')
+  }
+
+  async function removePost(post) {
+    const postId = post._id || post.id
+    const postTitle = post.title || 'this post'
+    
+    const confirmDelete = window.confirm(
+      `⚠️ Administrative Action Required\n\n` +
+      `You are about to remove the following content:\n\n` +
+      `"${postTitle}"\n\n` +
+      `This action will permanently delete the post from the system.\n` +
+      `Please confirm to proceed.`
+    )
+    
+    if (!confirmDelete) {
+      return
+    }
+    
+    try {
+      await deletePostInBackend(postId)
+      alert('Post removed successfully ✅')
+      fetchData()
+    } catch (err) {
+      console.error('Failed to remove post:', err)
+      alert('Error removing post. Please try again.')
+    }
   }
 
   return (
@@ -134,6 +160,13 @@ export default function Moderator() {
                         >
                           Flag Content
                         </button>
+                        <button 
+                          className="btn-dark" 
+                          style={{ fontSize: '0.8rem', background: '#1e293b', borderColor: '#1e293b' }}
+                          onClick={() => removePost(r)}
+                        >
+                          Remove Post
+                        </button>
                       </div>
                       <small className="text-secondary">Ref: #{getSafeId(r)}</small>
                     </div>
@@ -178,6 +211,13 @@ export default function Moderator() {
                           onClick={() => flagItem('news', n._id || n.id)}
                         >
                           Flag
+                        </button>
+                        <button 
+                          className="btn-dark" 
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', background: '#1e293b', borderColor: '#1e293b' }}
+                          onClick={() => removePost(n)}
+                        >
+                          Remove
                         </button>
                       </div>
                     </div>

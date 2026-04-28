@@ -43,20 +43,6 @@ function App() {
 
   return (
     <div id="app-root">
-      {/* Background Gold Flash Effects */}
-      <div className="thunder-flash">
-        <div className="lightning"></div>
-        <div className="lightning"></div>
-        <div className="lightning"></div>
-      </div>
-
-      {/* Right Corner Image */}
-      <img 
-        src="https://tse3.mm.bing.net/th/id/OIP.M_kLdRU2PZ3y-4dGIa_KTgHaEK?pid=Api&h=220&P=0" 
-        alt="Decorative Element" 
-        className="corner-image"
-      />
-
       <header className="site-header">
         <div className="flex items-center gap-3">
           <div style={{ 
@@ -138,6 +124,16 @@ function App() {
         )}
 
         <main className={role ? "dashboard-content" : ""}>
+          {/* Decorative Top Banner */}
+          <div className="container" style={{ marginBottom: '2rem' }}>
+            <img 
+              src="https://tse3.mm.bing.net/th/id/OIP.M_kLdRU2PZ3y-4dGIa_KTgHaEK?pid=Api&h=220&P=0" 
+              alt="Government Banner" 
+              className="corner-image"
+              style={{ margin: '0 auto' }}
+            />
+          </div>
+
           <Routes>
             <Route path="/" element={<div className="container"><Home /></div>} />
             <Route path="/login" element={<Login />} />
