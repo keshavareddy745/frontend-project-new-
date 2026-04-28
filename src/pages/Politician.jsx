@@ -13,6 +13,12 @@ export default function PoliticianDashboard() {
     politicianName: ''
   })
 
+  const [reviewData, setReviewData] = useState({
+    postId: null,
+    response: '',
+    status: 'reviewing'
+  })
+
   // ✅ FETCH DATA FROM BACKEND
   const fetchReports = async () => {
     try {
@@ -60,6 +66,38 @@ export default function PoliticianDashboard() {
       }
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  // ✅ SUBMIT REVIEW FOR CITIZEN ISSUE
+  async function submitReview(postId) {
+    if (!reviewData.response) {
+      alert('Please enter a response')
+      return
+    }
+
+    try {
+      const postToUpdate = allPosts.find(p => (p._id || p.id) === postId)
+      if (!postToUpdate) return
+
+      const res = await fetch(`https://backendproject-6-0sai.onrender.com/api/posts/${postId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...postToUpdate,
+          politicianResponse: reviewData.response,
+          status: reviewData.status
+        })
+      })
+
+      if (res.ok) {
+        alert('Review submitted successfully ✅')
+        setReviewData({ postId: null, response: '', status: 'reviewing' })
+        fetchReports()
+      }
+    } catch (err) {
+      console.error('Failed to submit review:', err)
+      alert('Error submitting review')
     }
   }
 
@@ -150,36 +188,121 @@ export default function PoliticianDashboard() {
       {/* 🔹 Announcements */}
       <div className="card">
         <h3>Your Announcements</h3>
+        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
+          Recent updates and news you've shared with the community.
+        </p>
 
         {announcements.length === 0 ? (
-          <p>No announcements yet</p>
+          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No announcements yet</p>
         ) : (
-          announcements.map(item => (
-            <div key={item.id} style={{ marginBottom: '1rem' }}>
-              <h4>{item.title}</h4>
-              <p>{item.description}</p>
-              <small>By {item.citizenName}</small>
-            </div>
-          ))
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {announcements.map(item => (
+              <div key={item._id || item.id} style={{ 
+                padding: '1.25rem', 
+                background: 'rgba(255, 255, 255, 0.03)', 
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}>
+                <h4 style={{ margin: '0 0 0.5rem 0', color: '#f8fafc' }}>{item.title}</h4>
+                <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.9rem', lineHeight: '1.5' }}>{item.description}</p>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                  Posted by: <span style={{ color: '#94a3b8' }}>{item.citizenName}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
       {/* 🔹 Citizen Issues */}
       <div className="card">
         <h3>Citizen Issues</h3>
+        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
+          Issues reported by citizens that require your attention and response.
+        </p>
 
         {loading ? (
-          <p>Loading...</p>
+          <p>Loading issues...</p>
         ) : reports.length === 0 ? (
-          <p>No issues</p>
+          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No active issues reported</p>
         ) : (
-          reports.map(report => (
-            <div key={report.id} style={{ marginBottom: '1rem' }}>
-              <h4>{report.title}</h4>
-              <p>{report.description}</p>
-              <small>By {report.citizenName}</small>
-            </div>
-          ))
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {reports.map(report => (
+              <div key={report._id || report.id} style={{ 
+                padding: '1.5rem', 
+                background: 'rgba(255, 255, 255, 0.03)', 
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.25rem 0', color: '#f8fafc', fontSize: '1.1rem' }}>{report.title}</h4>
+                    <small style={{ color: '#64748b' }}>Submitted by: <span style={{ color: '#94a3b8' }}>{report.citizenName}</span></small>
+                  </div>
+                  <span className={`badge ${report.status === 'resolved' ? 'badge-success' : 'badge-info'}`}>
+                    {(report.status || 'open').toUpperCase()}
+                  </span>
+                </div>
+                
+                <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6' }}>{report.description}</p>
+
+                {report.politicianResponse ? (
+                  <div style={{ 
+                    padding: '1rem', 
+                    background: 'rgba(59, 130, 246, 0.1)', 
+                    borderRadius: '12px',
+                    borderLeft: '4px solid #3b82f6'
+                  }}>
+                    <div style={{ fontWeight: '700', color: '#3b82f6', fontSize: '0.8rem', marginBottom: '0.25rem' }}>YOUR RESPONSE:</div>
+                    <div style={{ color: '#f8fafc', fontSize: '0.9rem' }}>{report.politicianResponse}</div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '1rem' }}>
+                    {reviewData.postId === (report._id || report.id) ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <textarea
+                          placeholder="Write your response or plan of action..."
+                          value={reviewData.response}
+                          onChange={e => setReviewData(prev => ({ ...prev, response: e.target.value }))}
+                          style={{ minHeight: '100px' }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <select 
+                            value={reviewData.status}
+                            onChange={e => setReviewData(prev => ({ ...prev, status: e.target.value }))}
+                            style={{ padding: '0.5rem', borderRadius: '8px', background: '#1e293b', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+                          >
+                            <option value="reviewing">Under Review</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                          <button 
+                            className="action-btn btn-success" 
+                            style={{ flex: 1 }}
+                            onClick={() => submitReview(report._id || report.id)}
+                          >
+                            Submit Response
+                          </button>
+                          <button 
+                            className="action-btn btn-secondary"
+                            onClick={() => setReviewData({ postId: null, response: '', status: 'reviewing' })}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button 
+                        className="action-btn btn-primary"
+                        onClick={() => setReviewData({ postId: (report._id || report.id), response: '', status: 'reviewing' })}
+                      >
+                        Review & Respond
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
