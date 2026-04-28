@@ -145,30 +145,57 @@ export default function Moderator() {
                     </div>
                     <p className="text-secondary mb-6">{r.description}</p>
                     <div className="flex-between">
-                      <div className="gap-2" style={{ display: 'flex' }}>
+                      <div className="gap-3" style={{ display: 'flex', alignItems: 'center' }}>
                         <button 
                           className={r.isImportant ? 'btn-primary' : 'btn-success'}
-                          style={{ fontSize: '0.8rem' }}
+                          style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
                           onClick={() => toggleImportant(r)}
                         >
                           {r.isImportant ? 'Lower Priority' : 'Escalate to Priority'}
                         </button>
-                        <button 
-                          className="btn-danger" 
-                          style={{ fontSize: '0.8rem' }}
-                          onClick={() => flagItem('report', r._id || r.id)}
-                        >
-                          Flag Content
-                        </button>
-                        <button 
-                          className="btn-dark" 
-                          style={{ fontSize: '0.8rem', background: '#1e293b', borderColor: '#1e293b' }}
-                          onClick={() => removePost(r)}
-                        >
-                          Remove Post
-                        </button>
+                        
+                        <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '0.5rem', borderLeft: '1px solid var(--gov-border)', paddingLeft: '1rem' }}>
+                          <button 
+                            className="btn-outline" 
+                            style={{ 
+                              padding: '0.5rem', 
+                              borderRadius: '8px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderColor: 'var(--gov-warning)',
+                              color: 'var(--gov-warning)'
+                            }}
+                            title="Flag Content"
+                            onClick={() => flagItem('report', r._id || r.id)}
+                          >
+                            🚩
+                          </button>
+                          <button 
+                            className="btn-outline-danger" 
+                            style={{ 
+                              padding: '0.5rem', 
+                              borderRadius: '8px', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              opacity: 0.4,
+                              transition: 'opacity 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = 0.4}
+                            title="Remove Post"
+                            onClick={() => removePost(r)}
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
-                      <small className="text-secondary">Ref: #{getSafeId(r)}</small>
+                      <small className="text-secondary" style={{ opacity: 0.6 }}>Ref: #{getSafeId(r)}</small>
                     </div>
                   </div>
                 ))
@@ -197,28 +224,51 @@ export default function Moderator() {
                     }}>
                       <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem' }}>{n.title}</h4>
                       <p className="text-secondary mb-4" style={{ fontSize: '0.85rem' }}>{n.description}</p>
-                      <div className="gap-2" style={{ display: 'flex' }}>
+                      <div className="flex-between">
                         <button 
                           className="btn-primary" 
-                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}
                           onClick={() => toggleImportant(n)}
                         >
                           {n.isImportant ? 'Normal' : 'Pin'}
                         </button>
-                        <button 
-                          className="btn-danger" 
-                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                          onClick={() => flagItem('news', n._id || n.id)}
-                        >
-                          Flag
-                        </button>
-                        <button 
-                          className="btn-dark" 
-                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', background: '#1e293b', borderColor: '#1e293b' }}
-                          onClick={() => removePost(n)}
-                        >
-                          Remove
-                        </button>
+                        
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button 
+                            className="btn-outline" 
+                            style={{ 
+                              padding: '0.4rem', 
+                              borderRadius: '6px', 
+                              width: '32px',
+                              height: '32px',
+                              fontSize: '0.8rem',
+                              borderColor: 'var(--gov-warning)',
+                              color: 'var(--gov-warning)'
+                            }}
+                            title="Flag"
+                            onClick={() => flagItem('news', n._id || n.id)}
+                          >
+                            🚩
+                          </button>
+                          <button 
+                            className="btn-outline-danger" 
+                            style={{ 
+                              padding: '0.4rem', 
+                              borderRadius: '6px', 
+                              width: '32px',
+                              height: '32px',
+                              fontSize: '0.8rem',
+                              opacity: 0.3,
+                              transition: 'opacity 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = 0.3}
+                            title="Remove"
+                            onClick={() => removePost(n)}
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
