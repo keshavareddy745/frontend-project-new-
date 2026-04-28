@@ -3,7 +3,8 @@ import { updatePostInBackend, fetchPostsFromBackend, createPostInBackend } from 
 
 export default function PoliticianDashboard() {
   const [allPosts, setAllPosts] = useState([])
-  const reports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && p.status !== 'resolved')
+  const activeReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && !p.isImportant && p.status !== 'resolved')
+  const resolvedReports = allPosts.filter(p => (!p.role || p.role === 'citizen') && p.status === 'resolved')
   const announcements = allPosts.filter(p => p.role === 'politician' && !p.isImportant)
   const importantItems = allPosts.filter(p => p.isImportant && p.status !== 'resolved')
   const [loading, setLoading] = useState(true)
@@ -157,7 +158,7 @@ export default function PoliticianDashboard() {
                             style={{ padding: '0.4rem', borderRadius: '6px', background: '#1e293b', color: 'white', fontSize: '0.8rem' }}
                           >
                             <option value="reviewing">Under Review</option>
-                            <option value="resolved">Resolved</option>
+                            <option value="resolved">Done / Resolved</option>
                           </select>
                           <button 
                             className="action-btn btn-success" 
@@ -264,18 +265,18 @@ export default function PoliticianDashboard() {
 
       {/* 🔹 Citizen Issues */}
       <div className="card">
-        <h3>Citizen Issues</h3>
+        <h3>Active Citizen Issues</h3>
         <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
-          Issues reported by citizens that require your attention and response.
+          Issues currently being reviewed or awaiting your attention.
         </p>
 
         {loading ? (
           <p>Loading issues...</p>
-        ) : reports.length === 0 ? (
+        ) : activeReports.length === 0 ? (
           <p style={{ color: '#64748b', fontStyle: 'italic' }}>No active issues reported</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {reports.map(report => (
+            {activeReports.map(report => (
               <div key={report._id || report.id} style={{ 
                 padding: '1.5rem', 
                 background: 'rgba(255, 255, 255, 0.03)', 
@@ -321,7 +322,7 @@ export default function PoliticianDashboard() {
                             style={{ padding: '0.5rem', borderRadius: '8px', background: '#1e293b', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
                           >
                             <option value="reviewing">Under Review</option>
-                            <option value="resolved">Resolved</option>
+                            <option value="resolved">Done / Resolved</option>
                           </select>
                           <button 
                             className="action-btn btn-success" 
@@ -348,6 +349,44 @@ export default function PoliticianDashboard() {
                     )}
                   </div>
                 )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 🔹 Resolved Issues */}
+      <div className="card" style={{ border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.05)' }}>
+        <h3 style={{ color: '#10b981' }}>Resolved Issues</h3>
+        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
+          Issues that have been completed and resolved.
+        </p>
+
+        {resolvedReports.length === 0 ? (
+          <p style={{ color: '#64748b', fontStyle: 'italic' }}>No resolved issues yet.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {resolvedReports.map(report => (
+              <div key={report._id || report.id} style={{ 
+                padding: '1.25rem', 
+                background: 'rgba(15, 23, 42, 0.4)', 
+                borderRadius: '12px',
+                borderLeft: '4px solid #10b981'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <h4 style={{ margin: 0, color: '#f8fafc' }}>{report.title}</h4>
+                  <span className="badge badge-success">RESOLVED</span>
+                </div>
+                <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.9rem' }}>{report.description}</p>
+                <div style={{ 
+                  padding: '0.75rem', 
+                  background: 'rgba(16, 185, 129, 0.1)', 
+                  borderRadius: '8px',
+                  border: '1px solid rgba(16, 185, 129, 0.2)'
+                }}>
+                  <small style={{ color: '#10b981', fontWeight: 'bold' }}>FINAL RESPONSE:</small>
+                  <p style={{ margin: '0.25rem 0 0 0', color: '#f8fafc', fontSize: '0.85rem' }}>{report.politicianResponse}</p>
+                </div>
               </div>
             ))}
           </div>
